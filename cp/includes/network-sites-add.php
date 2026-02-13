@@ -1,4 +1,14 @@
       <?php
+      // Ensure all expected array keys exist with default values
+      $item_defaults = array(
+          'url' => '',
+          'username' => '',
+          'password' => '',
+          'owner' => '',
+          'category' => '',
+          'flag_stats' => false,
+          'domain' => ''
+      );
 
       $editing = !empty($item);
       if( !$editing )
@@ -7,6 +17,14 @@
           $db = new NetworkDB();
           $item = $db->Defaults();
       }
+      
+      // Ensure $item is an array and merge with defaults
+      if( !isset($item) || !is_array($item) )
+      {
+          $item = array();
+      }
+      
+      $item = array_merge($item_defaults, $item);
 
       ?>
 

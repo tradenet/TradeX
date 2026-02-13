@@ -905,7 +905,7 @@ function load_outlist($file)
     {
         $ints = fread($fp, 8);
 
-        if( feof($fp) )
+        if( feof($fp) || strlen($ints) < 8 )
         {
             break;
         }
@@ -1104,7 +1104,14 @@ function stats_minute_update($now, $last, $n_date, $l_date)
             $stats[$trade]['24h'] = array_fill(1, STATS_PER_RECORD, 0);
             for( $i = 0; $i < HOURS_PER_DAY; $i++ )
             {
-                $r = unpack('L' . STATS_PER_RECORD, fread($fp, RECORD_SIZE_STATS));
+                $data = fread($fp, RECORD_SIZE_STATS);
+                
+                // Validate we got enough data
+                if (strlen($data) < RECORD_SIZE_STATS) {
+                    break;
+                }
+                
+                $r = unpack('L' . STATS_PER_RECORD, $data);
                 foreach( $r as $j => $k )
                 {
                     $stats[$trade]['24h'][$j] += $k;
@@ -1114,7 +1121,12 @@ function stats_minute_update($now, $last, $n_date, $l_date)
 
             // Seek to minute of last update to get stats
             fseek($fp, $reset_minutes[0] == 0 ? $minutes_start + (MINUTES_PER_DAY - 1) * RECORD_SIZE_STATS: $minutes_start + ($reset_minutes[0] - 1) * RECORD_SIZE_STATS, SEEK_SET);
-            $stats[$trade]['1m'] = unpack('L' . STATS_PER_RECORD, fread($fp, RECORD_SIZE_STATS));
+            $data = fread($fp, RECORD_SIZE_STATS);
+            
+            // Validate we got enough data
+            if (strlen($data) >= RECORD_SIZE_STATS) {
+                $stats[$trade]['1m'] = unpack('L' . STATS_PER_RECORD, $data);
+            }
         }
 
 
@@ -1662,7 +1674,19 @@ function check_blacklist($trade)
 
             while( !feof($fp) )
             {
-                list($item, $reason) = explode('|', trim(fgets($fp)));
+                $line = trim(fgets($fp));
+                if( empty($line) )
+                {
+                    continue;
+                }
+                
+                $parts = explode('|', $line, 2);
+                if( count($parts) < 1 )
+                {
+                    continue;
+                }
+                $item = $parts[0];
+                $reason = $parts[1] ?? '';
 
                 if( !string_is_empty($item) && stristr($checks[$file], $item) !== false )
                 {
@@ -1989,6 +2013,12 @@ function get_trade_log_stats($logs, $index, $filter = null)
 
     foreach( $logs as $log )
     {
+        // Skip if log file doesn't exist
+        if( !file_exists($log) )
+        {
+            continue;
+        }
+
         $fp_in = fopen($log, 'r');
         $fp_out = fopen($log, 'r+');
         flock($fp_out, LOCK_EX);
@@ -2382,9 +2412,9 @@ function string_remove_blank_lines($string, $sort = true)
 
 function string_format_comma_separated($string)
 {
-    if( strlen($string) < 1 || strstr($string, ',') === false )
+    if( $string === null || strlen($string) < 1 || strstr($string, ',') === false )
     {
-        return $string;
+        return $string ?? '';
     }
 
     $items = array();
@@ -2409,6 +2439,10 @@ function string_is_empty($string)
 
 function string_format_lf($string, $format = STRING_LF_UNIX)
 {
+    if( $string === null )
+    {
+        return '';
+    }
     return is_array($string) ?
            array_map('string_format_lf', $string) :
            preg_replace('~' . STRING_LF_WINDOWS . '|' . STRING_LF_MAC . '|' . STRING_LF_UNIX . '~', $format, $string);
@@ -2416,6 +2450,10 @@ function string_format_lf($string, $format = STRING_LF_UNIX)
 
 function string_htmlspecialchars($string)
 {
+    if( $string === null )
+    {
+        return '';
+    }
     return is_array($string) ?
            array_map('string_htmlspecialchars', $string) :
            htmlspecialchars($string, ENT_QUOTES);
@@ -2423,6 +2461,10 @@ function string_htmlspecialchars($string)
 
 function string_strip_tags($string)
 {
+    if( $string === null )
+    {
+        return '';
+    }
     return is_array($string) ?
            array_map('string_strip_tags', $string) :
            strip_tags($string);
@@ -2452,6 +2494,10 @@ function string_to_bool($value)
 
 function string_stripslashes($value)
 {
+    if( $value === null )
+    {
+        return '';
+    }
     return is_array($value) ?
            array_map('string_stripslashes', $value) :
            stripslashes($value);
@@ -2459,6 +2505,10 @@ function string_stripslashes($value)
 
 function string_trim($value)
 {
+    if( $value === null )
+    {
+        return '';
+    }
     return is_array($value) ?
            array_map('string_trim', $value) :
            trim($value);
@@ -2495,6 +2545,13 @@ function file_create($filename, $permissions = 0666)
 
 function file_write($filename, $data = STRING_BLANK, $permissions = 0666)
 {
+    // Create parent directory if it doesn't exist
+    $directory = dirname($filename);
+    if( !file_exists($directory) )
+    {
+        @mkdir($directory, 0755, true);
+    }
+
     $fh = fopen($filename, file_exists($filename) ? 'r+' : 'w');
     flock($fh, LOCK_EX);
     fseek($fh, 0);
@@ -2612,14 +2669,14 @@ function dir_remove($directory, $recursive = true)
 
 function dir_read($directory, $pattern, $type, $sort = true)
 {
-    if( !file_exists($directory) )
+    if( $directory === null || !file_exists($directory) )
     {
-        trigger_error('File not found', E_USER_ERROR);
+        return array();
     }
 
     if( !is_dir($directory) )
     {
-        trigger_error('Not a directory', E_USER_ERROR);
+        return array();
     }
 
     $contents = array();
@@ -2750,13 +2807,17 @@ function form_checkbox($name, $label, $value = 0, $attrs = '')
 function format_int_to_string($integer)
 {
     global $C;
-    return is_numeric($integer) ? number_format($integer, 0, $C['dec_point'], $C['thousands_sep']) : $integer;
+    $dec_point = $C['dec_point'] ?? '.';
+    $thousands_sep = $C['thousands_sep'] ?? ',';
+    return is_numeric($integer) ? number_format($integer, 0, $dec_point, $thousands_sep) : $integer;
 }
 
 function format_float_to_string($float, $decimals)
 {
     global $C;
-    return is_numeric($float) ? number_format($float, $decimals, $C['dec_point'], $C['thousands_sep']) : $float;
+    $dec_point = $C['dec_point'] ?? '.';
+    $thousands_sep = $C['thousands_sep'] ?? ',';
+    return is_numeric($float) ? number_format($float, $decimals, $dec_point, $thousands_sep) : $float;
 }
 
 function format_float_to_percent($float, $precision = 0)

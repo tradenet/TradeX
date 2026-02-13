@@ -26,17 +26,17 @@
     <vc:Chart.Series>
         <vc:DataSeries LegendText="Productivity" RenderAs="Line" LightingEnabled="False" ToolTipText="#YValue%" Color="#ff0000" MarkerScale="1.5" LineThickness="3" LabelEnabled="False">
             <vc:DataSeries.DataPoints>
-                <?php foreach( $history->stats as $date => $stats ): ?>
+                <?php if (is_array($history->stats)): foreach( $history->stats as $date => $stats ): ?>
                 <vc:DataPoint AxisXLabel="<?php echo $date; ?>" YValue="<?php echo $stats[0] > 0 ? format_float_to_percent($stats[6] / $stats[0]) : 0; ?>"/>
-                <?php endforeach; ?>
+                <?php endforeach; endif; ?>
             </vc:DataSeries.DataPoints>
         </vc:DataSeries>
 
         <vc:DataSeries LegendText="Return" RenderAs="Line" LightingEnabled="False" ToolTipText="#YValue%" Color="#0097FF" MarkerScale="1.5" LineThickness="3" LabelEnabled="False">
             <vc:DataSeries.DataPoints>
-                <?php foreach( $history->stats as $date => $stats ): ?>
+                <?php if (is_array($history->stats)): foreach( $history->stats as $date => $stats ): ?>
                 <vc:DataPoint AxisXLabel="<?php echo $date; ?>" YValue="<?php echo $stats[0] > 0 ? format_float_to_percent($stats[14] / $stats[0]) : 0; ?>"/>
-                <?php endforeach; ?>
+                <?php endforeach; endif; ?>
             </vc:DataSeries.DataPoints>
         </vc:DataSeries>
     </vc:Chart.Series>

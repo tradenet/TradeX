@@ -63,12 +63,12 @@
                 <!--
                 <div class="field">
                   <label>Decimal Point:</label>
-                  <span><input name="dec_point" value="<?php echo $C['dec_point']; ?>" size="2" type="text"></span>
+                  <span><input name="dec_point" value="<?php echo isset($C['dec_point']) ? $C['dec_point'] : '.'; ?>" size="2" type="text"></span>
                 </div>
 
                 <div class="field">
                   <label>Thousands Separator:</label>
-                  <span><input name="thousands_sep" value="<?php echo $C['thousands_sep']; ?>" size="2" type="text"></span>
+                  <span><input name="thousands_sep" value="<?php echo isset($C['thousands_sep']) ? $C['thousands_sep'] : ','; ?>" size="2" type="text"></span>
                 </div>
                 -->
 
@@ -105,34 +105,34 @@
 
                 <div class="field" style="display: none;">
                   <label>Sendmail Path:</label>
-                  <span><input type="text" class="mailer-field mailer-sendmail" size="50" value="<?php echo $C['sendmail_path']; ?>" name="sendmail_path"/></span>
+                  <span><input type="text" class="mailer-field mailer-sendmail" size="50" value="<?php echo isset($C['sendmail_path']) ? $C['sendmail_path'] : ''; ?>" name="sendmail_path"/></span>
                 </div>
 
                 <div class="field" style="display: none;">
                   <label>SMTP Hostname:</label>
-                  <span><input type="text" class="mailer-field mailer-smtp" size="50" value="<?php echo $C['smtp_hostname']; ?>" name="smtp_hostname"/></span>
+                  <span><input type="text" class="mailer-field mailer-smtp" size="50" value="<?php echo isset($C['smtp_hostname']) ? $C['smtp_hostname'] : ''; ?>" name="smtp_hostname"/></span>
                 </div>
 
                 <div class="field" style="display: none;">
                   <label>SMTP Port:</label>
-                  <span><input type="text" class="mailer-field mailer-smtp" size="10" value="<?php echo $C['smtp_port']; ?>" name="smtp_port"/></span>
+                  <span><input type="text" class="mailer-field mailer-smtp" size="10" value="<?php echo isset($C['smtp_port']) ? $C['smtp_port'] : ''; ?>" name="smtp_port"/></span>
                 </div>
 
                 <div class="field" style="display: none;">
                   <label></label>
                   <span>
-                    <?php echo form_checkbox('flag_smtp_ssl', 'Use SSL for SMTP server connection', $C['flag_smtp_ssl'], 'class="mailer-field mailer-smtp"'); ?>
+                    <?php echo form_checkbox('flag_smtp_ssl', 'Use SSL for SMTP server connection', isset($C['flag_smtp_ssl']) ? $C['flag_smtp_ssl'] : false, 'class="mailer-field mailer-smtp"'); ?>
                   </span>
                 </div>
 
                 <div class="field" style="display: none;">
                   <label>SMTP Username:</label>
-                  <span><input type="text" class="mailer-field mailer-smtp" size="50" value="<?php echo $C['smtp_username']; ?>" name="smtp_username"/></span>
+                  <span><input type="text" class="mailer-field mailer-smtp" size="50" value="<?php echo isset($C['smtp_username']) ? $C['smtp_username'] : ''; ?>" name="smtp_username"/></span>
                 </div>
 
                 <div class="field" style="display: none;">
                   <label>SMTP Password:</label>
-                  <span><input type="password" class="mailer-field mailer-smtp" size="50" value="<?php echo $C['smtp_password']; ?>" name="smtp_password"/></span>
+                  <span><input type="password" class="mailer-field mailer-smtp" size="50" value="<?php echo isset($C['smtp_password']) ? $C['smtp_password'] : ''; ?>" name="smtp_password"/></span>
                 </div>
 
               </fieldset>
@@ -154,7 +154,7 @@
 
                 <div class="field">
                   <label></label>
-                  <span><?php echo form_checkbox('flag_captcha_words', 'Use words file for CAPTCHA strings', $C['flag_captcha_words']); ?></span>
+                  <span><?php echo form_checkbox('flag_captcha_words', 'Use words file for CAPTCHA strings', isset($C['flag_captcha_words']) ? $C['flag_captcha_words'] : false); ?></span>
                 </div>
 
               </fieldset>
@@ -166,32 +166,32 @@
 
                 <div class="field">
                   <label></label>
-                  <span><?php echo form_checkbox('flag_accept_new_trades', 'Accepting new trades', $C['flag_accept_new_trades']); ?></span>
+                  <span><?php echo form_checkbox('flag_accept_new_trades', 'Accepting new trades', isset($C['flag_accept_new_trades']) ? $C['flag_accept_new_trades'] : false); ?></span>
                 </div>
 
                 <div class="field">
                   <label></label>
-                  <span><?php echo form_checkbox('flag_captcha_register', 'Use CAPTCHA on registration form', $C['flag_captcha_register']); ?></span>
+                  <span><?php echo form_checkbox('flag_captcha_register', 'Use CAPTCHA on registration form', isset($C['flag_captcha_register']) ? $C['flag_captcha_register'] : false); ?></span>
                 </div>
 
                 <div class="field">
                   <label></label>
-                  <span><?php echo form_checkbox('flag_allow_select_category', 'Allow users to select a category for their site on the registration form', $C['flag_allow_select_category']); ?></span>
+                  <span><?php echo form_checkbox('flag_allow_select_category', 'Allow users to select a category for their site on the registration form', isset($C['flag_allow_select_category']) ? $C['flag_allow_select_category'] : false); ?></span>
                 </div>
 
                 <div class="field">
                   <label></label>
-                  <span><?php echo form_checkbox('flag_allow_login', 'Allow users to login with a password to view their stats', $C['flag_allow_login']); ?></span>
+                  <span><?php echo form_checkbox('flag_allow_login', 'Allow users to login with a password to view their stats', isset($C['flag_allow_login']) ? $C['flag_allow_login'] : false); ?></span>
                 </div>
 
                 <div class="field">
                   <label></label>
-                  <span><?php echo form_checkbox('flag_register_email_user', 'Send confirmation e-mail to user upon successful registration', $C['flag_register_email_user']); ?></span>
+                  <span><?php echo form_checkbox('flag_register_email_user', 'Send confirmation e-mail to user upon successful registration', isset($C['flag_register_email_user']) ? $C['flag_register_email_user'] : false); ?></span>
                 </div>
 
                 <div class="field">
                   <label></label>
-                  <span><?php echo form_checkbox('flag_register_email_admin', 'E-mail administrator when new trades are registered', $C['flag_register_email_admin']); ?></span>
+                  <span><?php echo form_checkbox('flag_register_email_admin', 'E-mail administrator when new trades are registered', isset($C['flag_register_email_admin']) ? $C['flag_register_email_admin'] : false); ?></span>
                 </div>
 
                 <div class="field">
@@ -217,12 +217,12 @@
                 <div class="field">
                   <label>Required Fields:</label>
                   <span>
-                    <?php echo form_checkbox('flag_req_email', 'E-mail Address', $C['flag_req_email']); ?><br />
-                    <?php echo form_checkbox('flag_req_site_name', 'Site Name', $C['flag_req_site_name']); ?><br />
-                    <?php echo form_checkbox('flag_req_site_description', 'Site Description', $C['flag_req_site_description']); ?><br />
-                    <?php echo form_checkbox('flag_req_icq', 'ICQ Number', $C['flag_req_icq']); ?><br />
-                    <?php echo form_checkbox('flag_req_nickname', 'Name/Nickname', $C['flag_req_nickname']); ?><br />
-                    <?php echo form_checkbox('flag_req_banner', 'Banner URL', $C['flag_req_banner']); ?>
+                    <?php echo form_checkbox('flag_req_email', 'E-mail Address', isset($C['flag_req_email']) ? $C['flag_req_email'] : false); ?><br />
+                    <?php echo form_checkbox('flag_req_site_name', 'Site Name', isset($C['flag_req_site_name']) ? $C['flag_req_site_name'] : false); ?><br />
+                    <?php echo form_checkbox('flag_req_site_description', 'Site Description', isset($C['flag_req_site_description']) ? $C['flag_req_site_description'] : false); ?><br />
+                    <?php echo form_checkbox('flag_req_icq', 'ICQ Number', isset($C['flag_req_icq']) ? $C['flag_req_icq'] : false); ?><br />
+                    <?php echo form_checkbox('flag_req_nickname', 'Name/Nickname', isset($C['flag_req_nickname']) ? $C['flag_req_nickname'] : false); ?><br />
+                    <?php echo form_checkbox('flag_req_banner', 'Banner URL', isset($C['flag_req_banner']) ? $C['flag_req_banner'] : false); ?>
                   </span>
                 </div>
 
@@ -235,7 +235,7 @@
                 <!--
                 <div class="field">
                   <label>Interval:</label>
-                  <span><input type="text" size="3" value="<?php echo $C['thumb_grab_interval']; ?>" name="thumb_grab_interval"/> hours</span>
+                  <span><input type="text" size="3" value="<?php echo isset($C['thumb_grab_interval']) ? $C['thumb_grab_interval'] : ''; ?>" name="thumb_grab_interval"/> hours</span>
                 </div>
                 -->
 
@@ -432,37 +432,37 @@
 
                 <div class="field">
                   <label>Trades Satisfied URL:</label>
-                  <span><input type="text" size="80" value="<?php echo $C['trades_satisfied_url']; ?>" name="trades_satisfied_url"/></span>
+                  <span><input type="text" size="80" value="<?php echo isset($C['trades_satisfied_url']) ? $C['trades_satisfied_url'] : ''; ?>" name="trades_satisfied_url"/></span>
                 </div>
 
                 <div class="field">
                   <label>Count Clicks:</label>
-                  <span><input type="text" size="5" value="<?php echo $C['count_clicks']; ?>" name="count_clicks"/></span>
+                  <span><input type="text" size="5" value="<?php echo isset($C['count_clicks']) ? $C['count_clicks'] : ''; ?>" name="count_clicks"/></span>
                 </div>
 
                 <div class="field">
                   <label>Fast Click:</label>
-                  <span><input type="text" size="5" value="<?php echo $C['fast_click']; ?>" name="fast_click"/> seconds</span>
+                  <span><input type="text" size="5" value="<?php echo isset($C['fast_click']) ? $C['fast_click'] : ''; ?>" name="fast_click"/> seconds</span>
                 </div>
 
                 <div class="field">
                   <label></label>
-                  <span><?php echo form_checkbox('flag_filter_no_image', 'Filter users that do not load the image.php script', $C['flag_filter_no_image']); ?></span>
+                  <span><?php echo form_checkbox('flag_filter_no_image', 'Filter users that do not load the image.php script', isset($C['flag_filter_no_image']) ? $C['flag_filter_no_image'] : false); ?></span>
                 </div>
 
                 <div class="field">
                   <label>Autostop Interval:</label>
-                  <span><input type="text" size="5" value="<?php echo $C['autostop_interval']; ?>" name="autostop_interval"/> hours</span>
+                  <span><input type="text" size="5" value="<?php echo isset($C['autostop_interval']) ? $C['autostop_interval'] : ''; ?>" name="autostop_interval"/> hours</span>
                 </div>
 
                 <div class="field">
                   <label></label>
-                  <span><?php echo form_checkbox('flag_reactivate_autostopped', 'Automatically re-activate trades that have been autostopped', $C['flag_reactivate_autostopped']); ?></span>
+                  <span><?php echo form_checkbox('flag_reactivate_autostopped', 'Automatically re-activate trades that have been autostopped', isset($C['flag_reactivate_autostopped']) ? $C['flag_reactivate_autostopped'] : false); ?></span>
                 </div>
 
                 <div class="field">
                   <label>Toplist Build Interval:</label>
-                  <span><input type="text" size="5" value="<?php echo $C['toplist_rebuild_interval']; ?>" name="toplist_rebuild_interval"/> minutes</span>
+                  <span><input type="text" size="5" value="<?php echo isset($C['toplist_rebuild_interval']) ? $C['toplist_rebuild_interval'] : ''; ?>" name="toplist_rebuild_interval"/> minutes</span>
                 </div>
 
               </fieldset>

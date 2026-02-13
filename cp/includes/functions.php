@@ -62,7 +62,15 @@ function cp_authenticate($session = true)
 
 
 
-        list($username, $password) = explode('|', file_first_line(FILE_CP_USER));
+        $parts = explode('|', file_first_line(FILE_CP_USER));
+        if( count($parts) >= 2 )
+        {
+            list($username, $password) = $parts;
+        }
+        else
+        {
+            return 'Invalid user data file';
+        }
 
         if( $username == $_REQUEST[CP_USERNAME_FIELD] && $password == sha1($_REQUEST[CP_PASSWORD_FIELD]) )
         {
@@ -89,7 +97,13 @@ function cp_session_authenticate($cookie)
 
     if( file_exists($filename) && is_file($filename) )
     {
-        list($username, $session, $timestamp, $browser, $ip) = explode('|', file_first_line($filename));
+        $parts = explode('|', file_first_line($filename));
+        if( count($parts) < 5 )
+        {
+            cp_logout();
+            return 'Invalid session data';
+        }
+        list($username, $session, $timestamp, $browser, $ip) = $parts;
 
         if( $username == $cookie_data[CP_USERNAME_FIELD] && $browser == sha1($_SERVER['HTTP_USER_AGENT']) && $ip == $_SERVER['REMOTE_ADDR'] )
         {
@@ -137,7 +151,16 @@ function cp_session_cleanup($clean_all = false)
     foreach( dir_read_files(DIR_CP_SESSION) as $file )
     {
         $file = DIR_CP_SESSION . '/' . $file;
-        list($username, $session, $timestamp, $browser, $ip) = explode('|', file_first_line($file));
+        $parts = explode('|', file_first_line($file));
+        
+        // Delete malformed session files
+        if( count($parts) < 5 )
+        {
+            file_delete($file);
+            continue;
+        }
+        
+        list($username, $session, $timestamp, $browser, $ip) = $parts;
 
         if( $clean_all || $timestamp < time() - CP_SESSION_DURATION )
         {
@@ -290,7 +313,7 @@ function recompile_templates()
         if( ($code = $compiler->CompileFile($file, DIR_TEMPLATES)) === false )
         {
             return array(JSON_KEY_MESSAGE => 'Template ' . $file . ' contains errors',
-                         JSON_KEY_WARNINGS => Compiler::GetErrors());
+                         JSON_KEY_WARNINGS => $compiler->GetErrors());
         }
 
         file_write($compiled, $code);
@@ -346,7 +369,8 @@ function check_image_resizer()
     if( extension_loaded('gd') )
     {
         $gdinfo = gd_info();
-        if( $gdinfo['JPG Support'] )
+        // Check for JPG/JPEG support (key name varies by PHP version)
+        if( isset($gdinfo['JPG Support']) || isset($gdinfo['JPEG Support']) )
         {
             $C['have_gd'] = 1;
         }

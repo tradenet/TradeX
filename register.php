@@ -23,6 +23,19 @@ $functions = array('register' => '_xRegister',
 
 prepare_request();
 
+// Initialize form field defaults to avoid undefined array key errors
+$form_defaults = array(
+    'return_url' => '',
+    'email' => '',
+    'site_name' => '',
+    'site_description' => '',
+    'category' => '',
+    'icq' => '',
+    'nickname' => '',
+    'banner' => ''
+);
+$_REQUEST = array_merge($form_defaults, $_REQUEST);
+
 $t = new Template();
 $t->AssignByRef('g_config', $C);
 $t->AssignByRef('g_request', $_REQUEST);
@@ -35,8 +48,8 @@ if( !$C['flag_accept_new_trades'] )
 }
 
 
-$r = $_REQUEST['r'];
-if( isset($functions[$r]) )
+$r = $_REQUEST['r'] ?? null;
+if( isset($r) && isset($functions[$r]) )
 {
     call_user_func($functions[$r]);
 }
@@ -59,6 +72,11 @@ function _xRegisterShow()
     // Default new trade settings
     $t->Assign('g_trade_defaults', unserialize(file_get_contents(FILE_NEW_TRADE_DEFAULTS)));
 
+    // Initialize errors array (will be overwritten if there are actual errors)
+    if (!isset($t->vars['g_errors'])) {
+        $t->Assign('g_errors', array());
+    }
+
     $t->Display('register.tpl');
 }
 
@@ -72,9 +90,9 @@ function _xRegister()
 
     $v =& Validator::Get();
 
-    $v->Register($_REQUEST['return_url'], VT_VALID_HTTP_URL, "The 'URL to Send Traffic' field must be a valid HTTP URL");
+    $v->Register($_REQUEST['return_url'] ?? '', VT_VALID_HTTP_URL, "The 'URL to Send Traffic' field must be a valid HTTP URL");
 
-    if( !string_is_empty($_REQUEST['return_url']) )
+    if( !string_is_empty($_REQUEST['return_url'] ?? '') )
     {
         require_once 'http.php';
         $http = new HTTP();
@@ -128,7 +146,7 @@ function _xRegister()
         $captcha->Verify();
     }
 
-    $_REQUEST['domain'] = domain_from_url($_REQUEST['return_url']);
+    $_REQUEST['domain'] = domain_from_url($_REQUEST['return_url'] ?? '');
 
     require_once 'dirdb.php';
     $db = new TradeDB();
@@ -136,8 +154,8 @@ function _xRegister()
 
 
     // Check blacklist
-    $_REQUEST['server_ip'] = gethostbyname($domain);
-    $_REQUEST['dns'] = gethostbyname($domain);
+    $_REQUEST['server_ip'] = gethostbyname($_REQUEST['domain']);
+    $_REQUEST['dns'] = gethostbyname($_REQUEST['domain']);
     if( ($blacklisted = check_blacklist($_REQUEST)) !== false )
     {
         $v->SetError("You have matched one or more of our blacklist items and cannot register new trade accounts" . (!empty($blacklisted[1]) ? ": " . $blacklisted[1] : ''));
@@ -148,8 +166,8 @@ function _xRegister()
     $categories = array_map('trim', file(FILE_CATEGORIES));
     if( $C['flag_allow_select_category'] && count($categories) )
     {
-        $v->Register(in_array($_REQUEST['category'], $categories), VT_IS_TRUE, "You have selected an invalid category");
-        $_REQUEST['categories'] = array($_REQUEST['category']);
+        $v->Register(in_array($_REQUEST['category'] ?? '', $categories), VT_IS_TRUE, "You have selected an invalid category");
+        $_REQUEST['categories'] = array($_REQUEST['category'] ?? '');
     }
 
 
@@ -179,7 +197,7 @@ function _xConfirmShow()
 
     $db = new RegisterConfirmsDB();
     $db->DeleteExpired();
-    $confirm = $db->Retrieve($_REQUEST['id']);
+    $confirm = $db->Retrieve($_REQUEST['id'] ?? '');
 
     require_once 'validator.php';
     $v =& Validator::Get();
@@ -192,7 +210,7 @@ function _xConfirmShow()
     }
     else
     {
-        $db->Delete($_REQUEST['id']);
+        $db->Delete($_REQUEST['id'] ?? '');
 
         $defaults = unserialize(file_get_contents(FILE_NEW_TRADE_DEFAULTS));
 

@@ -9,6 +9,6 @@
     <script type="text/javascript" src="js/jquery.ui.js"></script>
     <script type="text/javascript" src="js/cp.js"></script>
     <script type="text/javascript" src="js/visifire.js"></script>
-    <script type="text/javascript" src="js/swfobject.js"></script>
+    <script src="js/ruffle.js"></script>
   </head>
   <body>

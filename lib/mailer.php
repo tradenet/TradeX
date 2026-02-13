@@ -32,7 +32,7 @@ class Mailer extends PHPMailer
 
     var $signature;
 
-    function Mailer()
+    function __construct()
     {
         global $C;
 
@@ -434,7 +434,7 @@ class PHPMailer {
 
     while($index < count($hosts) && $connection == false) {
       $hostinfo = array();
-      if(eregi('^(.+):([0-9]+)$', $hosts[$index], $hostinfo)) {
+      if(preg_match('/^(.+):([0-9]+)$/i', $hosts[$index], $hostinfo)) {
         $host = $hostinfo[1];
         $port = $hostinfo[2];
       } else {
@@ -949,12 +949,9 @@ class PHPMailer {
       $this->SetError($this->Lang('file_open') . $path);
       return '';
     }
-    $magic_quotes = get_magic_quotes_runtime();
-    set_magic_quotes_runtime(0);
     $file_buffer = fread($fd, filesize($path));
     $file_buffer = $this->EncodeString($file_buffer, $encoding);
     fclose($fd);
-    set_magic_quotes_runtime($magic_quotes);
 
     return $file_buffer;
   }
@@ -1086,7 +1083,7 @@ class PHPMailer {
     $eol = "\r\n";
     $escape = '=';
     $output = '';
-    while( list(, $line) = each($lines) ) {
+    foreach($lines as $line) {
       $linlen = strlen($line);
       $newline = '';
       for($i = 0; $i < $linlen; $i++) {
@@ -1248,16 +1245,6 @@ class PHPMailer {
   }
 
   function ServerVar($varName) {
-    global $HTTP_SERVER_VARS;
-    global $HTTP_ENV_VARS;
-
-    if(!isset($_SERVER)) {
-      $_SERVER = $HTTP_SERVER_VARS;
-      if(!isset($_SERVER['REMOTE_ADDR'])) {
-        $_SERVER = $HTTP_ENV_VARS; // must be Apache
-      }
-    }
-
     if(isset($_SERVER[$varName])) {
       return $_SERVER[$varName];
     } else {
@@ -1499,12 +1486,12 @@ class POP3
       $this->error = null;
     }
 
-  function Authorise ($host, $port = false, $tval = false, $username, $password, $debug_level = 0)
+  function Authorise ($host, $username, $password, $port = false, $tval = false, $debug_level = 0)
   {
     $this->host = $host;
 
     //  If no port value is passed, retrieve it
-    if ($port == false)
+    if ($port === false)
     {
       $this->port = $this->POP3_PORT;
     }
@@ -1975,7 +1962,7 @@ class SMTP
 
     $max_line_length = 998; # used below; set here for ease in change
 
-    while(list(,$line) = @each($lines)) {
+    foreach($lines as $line) {
       $lines_out = null;
       if($line == "" && $in_headers) {
         $in_headers = false;
@@ -2002,7 +1989,7 @@ class SMTP
       $lines_out[] = $line;
 
       # now send the lines to the server
-      while(list(,$line_out) = @each($lines_out)) {
+      foreach($lines_out as $line_out) {
         if(strlen($line_out) > 0)
         {
           if(substr($line_out, 0, 1) == ".") {
@@ -2070,7 +2057,7 @@ class SMTP
 
     # parse the reply and place in our array to return to user
     $entries = explode($this->CRLF,$rply);
-    while(list(,$l) = @each($entries)) {
+    foreach($entries as $l) {
       $list[] = substr($l,4);
     }
 

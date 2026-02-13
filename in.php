@@ -35,7 +35,6 @@ if( isset($GLOBALS['C']) && isset($GLOBALS['C']['page_new']) )
 
 // PHP configuration settings
 @ini_set('memory_limit', '128M');
-@set_magic_quotes_runtime(0);
 @set_time_limit(90);
 
 
@@ -239,6 +238,11 @@ if( $track_hit )
 
 
     // Generate session file
+    $session_dir = dirname($session_file);
+    if (!is_dir($session_dir)) {
+        @mkdir($session_dir, 0777, true);
+    }
+    
     $fp = fopen($session_file, 'w');
     flock($fp, LOCK_EX);
     fwrite($fp, serialize($session));
@@ -282,24 +286,30 @@ if( $track_hit )
 
     // Seek to hour, read, update
     fseek($fp, $hour_offset, SEEK_SET);
-    $r = unpack($pack_arg, fread($fp, $in_size));
-    $r[1]++;
-    if( $is_unique ) $r[2]++;
-    if( $session['p'] ) $r[3]++;
-    $r[4 + $session['cq']]++;
-    fseek($fp, -$in_size, SEEK_CUR);
-    fwrite($fp, pack($pack_arg, $r[1], $r[2], $r[3], $r[4], $r[5], $r[6]), $in_size);
+    $data = fread($fp, $in_size);
+    if (strlen($data) >= $in_size) {
+        $r = unpack($pack_arg, $data);
+        $r[1]++;
+        if( $is_unique ) $r[2]++;
+        if( $session['p'] ) $r[3]++;
+        $r[4 + $session['cq']]++;
+        fseek($fp, -$in_size, SEEK_CUR);
+        fwrite($fp, pack($pack_arg, $r[1], $r[2], $r[3], $r[4], $r[5], $r[6]), $in_size);
+    }
 
 
     // Seek to minute, read, update
     fseek($fp, $minute_offset, SEEK_SET);
-    $r = unpack($pack_arg, fread($fp, $in_size));
-    $r[1]++;
-    if( $is_unique ) $r[2]++;
-    if( $session['p'] ) $r[3]++;
-    $r[4 + $session['cq']]++;
-    fseek($fp, -$in_size, SEEK_CUR);
-    fwrite($fp, pack($pack_arg, $r[1], $r[2], $r[3], $r[4], $r[5], $r[6]), $in_size);
+    $data = fread($fp, $in_size);
+    if (strlen($data) >= $in_size) {
+        $r = unpack($pack_arg, $data);
+        $r[1]++;
+        if( $is_unique ) $r[2]++;
+        if( $session['p'] ) $r[3]++;
+        $r[4 + $session['cq']]++;
+        fseek($fp, -$in_size, SEEK_CUR);
+        fwrite($fp, pack($pack_arg, $r[1], $r[2], $r[3], $r[4], $r[5], $r[6]), $in_size);
+    }
 
     flock($fp, LOCK_UN);
     fclose($fp);

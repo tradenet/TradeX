@@ -31,7 +31,7 @@ class Captcha
 
     var $background_color = array(0xFF, 0xFF, 0xFF);
 
-    function Captcha()
+    function __construct()
     {
 
     }
@@ -44,8 +44,8 @@ class Captcha
         $string = $this->GenerateCode();
         $font_file = DIR_ASSETS . '/' . CAPTCHA_FONT;
         $box = imagettfbboxextended(CAPTCHA_FONT_SIZE, 0, $font_file, $string);
-        $width = $box['width'] + CAPTCHA_PADDING_LEFT * 2;
-        $height = $box['height'] + CAPTCHA_PADDING_TOP * 2;
+        $width = (int)($box['width'] + CAPTCHA_PADDING_LEFT * 2);
+        $height = (int)($box['height'] + CAPTCHA_PADDING_TOP * 2);
 
 
         // Setup the image
@@ -61,7 +61,7 @@ class Captcha
         for( $i = 0; $i < strlen($string); $i++ )
         {
             $bb = imagettfbboxextended(CAPTCHA_FONT_SIZE, 0, $font_file, $string[$i]);
-            imagettftext($image, CAPTCHA_FONT_SIZE, 0, $box['x'] + CAPTCHA_PADDING_LEFT + $offset, $box['y'] + CAPTCHA_PADDING_TOP + rand(-5,5), $foreground, $font_file, $string[$i]);
+            imagettftext($image, CAPTCHA_FONT_SIZE, 0, (int)($box['x'] + CAPTCHA_PADDING_LEFT + $offset), (int)($box['y'] + CAPTCHA_PADDING_TOP + rand(-5,5)), $foreground, $font_file, $string[$i]);
             $offset += $bb['width'] + CAPTCHA_CHAR_OFFSET;
         }
 
@@ -179,10 +179,10 @@ class Captcha
                 }
                 else
                 {
-                    $color=imagecolorat($img, $sx, $sy) & 0xFF;
-                    $color_x=imagecolorat($img, $sx+1, $sy) & 0xFF;
-                    $color_y=imagecolorat($img, $sx, $sy+1) & 0xFF;
-                    $color_xy=imagecolorat($img, $sx+1, $sy+1) & 0xFF;
+                    $color=imagecolorat($img, (int)$sx, (int)$sy) & 0xFF;
+                    $color_x=imagecolorat($img, (int)$sx+1, (int)$sy) & 0xFF;
+                    $color_y=imagecolorat($img, (int)$sx, (int)$sy+1) & 0xFF;
+                    $color_xy=imagecolorat($img, (int)$sx+1, (int)$sy+1) & 0xFF;
                 }
 
                 if( $color==255 && $color_x==255 && $color_y==255 && $color_xy==255 )
@@ -219,7 +219,7 @@ class Captcha
                     $newblue=$newcolor0* $this->foreground_color[2]+$newcolor*$this->background_color[2];
                 }
 
-                imagesetpixel($img2, $x, $y, imagecolorallocate($img2, $newred, $newgreen, $newblue));
+                imagesetpixel($img2, $x, $y, imagecolorallocate($img2, (int)$newred, (int)$newgreen, (int)$newblue));
             }
         }
 

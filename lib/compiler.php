@@ -44,7 +44,7 @@ class Compiler
 
     var $literal_close_tags = array('/php', '/phpcode', '/literal');
 
-    function Compiler()
+    function __construct()
     {
     }
 
@@ -580,7 +580,7 @@ class Compiler
         return $parsed_tag;
     }
 
-    function ParseVars($variable, $modifiers = null, $is_variable = false)
+    function ParseVars($variable, $modifiers = '', $is_variable = false)
     {
         $parsed_var = preg_replace(array('~\$([a-z0-9_]+)~',
                                          '~(\$this->vars(\[\'?[a-z0-9_]+\'?\])+)\.([a-z0-9_]+)~i',
@@ -588,7 +588,7 @@ class Compiler
                                    array("\$this->vars['\\1']",
                                          "\\1['\\3']"), $variable);
 
-        if( $is_variable && (!isset($this->defines['htmlspecialchars']) || $this->defines['htmlspecialchars'] === true) && !stristr($modifiers, 'rawhtml') && !stristr($modifiers, 'htmlspecialchars') )
+        if( $is_variable && (!isset($this->defines['htmlspecialchars']) || $this->defines['htmlspecialchars'] === true) && !stristr((string)$modifiers, 'rawhtml') && !stristr((string)$modifiers, 'htmlspecialchars') )
         {
             $modifiers = (empty($modifiers) ? '' : "$modifiers|") . 'htmlspecialchars';
         }

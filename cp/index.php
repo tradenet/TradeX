@@ -15,7 +15,7 @@
 
 require_once 'includes/functions.php';
 
-if( $_REQUEST['r'] == 'btl' )
+if( isset($_REQUEST['r']) && $_REQUEST['r'] == 'btl' )
 {
     build_all_toplists();
     return;
@@ -45,7 +45,7 @@ if( file_exists('reset-access.php') || file_exists('../auto-install.php') )
 
 if( ($auth_error = cp_authenticate()) === true )
 {
-    cp_exec($_REQUEST['r'], '_xStatsOverallShow');
+    cp_exec($_REQUEST['r'] ?? '', '_xStatsOverallShow');
 }
 else
 {

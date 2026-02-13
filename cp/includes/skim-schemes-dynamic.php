@@ -2,7 +2,7 @@
 
         <div id="dialog-header">
           <img src="images/dialog-close-22x22.png" id="dialog-close"/>
-          Dynamic Skim Scheme for '<?php echo $item['scheme']; ?>'
+          Dynamic Skim Scheme for '<?php echo isset($item['scheme']) ? htmlspecialchars($item['scheme']) : ''; ?>'
         </div>
 
         <form method="post" action="xhr.php" class="xhr-form">
@@ -13,7 +13,7 @@
               <?php
               require_once 'textdb.php';
               $db = new SkimSchemesDynamicDB();
-              $db->db_file = DIR_SKIM_SCHEMES_DYNAMIC . '/' . $item['scheme'];
+              $db->db_file = DIR_SKIM_SCHEMES_DYNAMIC . '/' . (isset($item['scheme']) ? $item['scheme'] : 'default');
 
               foreach( $db->RetrieveAll() as $index => $scheme ):
               ?>
@@ -42,7 +42,7 @@
                       <tr>
                       <?php for( $i = 1; $i <= 7; $i++ ): ?>
                         <td class="ta-center"<?php echo ($i == 1 ? ' style="padding-left: 0px;"' : ''); ?>>
-                          <input type="text" name="click[<?php echo $i; ?>][]" value="<?php echo $scheme['click'][$i]; ?>" size="3"/>
+                          <input type="text" name="click[<?php echo $i; ?>][]" value="<?php echo isset($scheme['click_' . $i]) ? $scheme['click_' . $i] : ''; ?>" size="3"/>
                         </td>
                       <?php endfor; ?>
                         <td>
@@ -50,7 +50,7 @@
                         </td>
                       <?php for( $i = 1; $i <= 3; $i++ ): ?>
                         <td class="ta-center">
-                          <input type="text" name="cycle_<?php echo $i; ?>[]" value="<?php echo $scheme['cycle_' . $i]; ?>" size="3"/>
+                          <input type="text" name="cycle_<?php echo $i; ?>[]" value="<?php echo isset($scheme['cycle_' . $i]) ? $scheme['cycle_' . $i] : ''; ?>" size="3"/>
                         </td>
                       <?php endfor; ?>
                       </tr>
@@ -65,20 +65,20 @@
                     <select name="start_day[]">
                       <?php
                       $days = array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Weekdays', 'Weekends');
-                      echo form_options_hash($days, $scheme['start_day']);
+                      echo form_options_hash($days, isset($scheme['start_day']) ? $scheme['start_day'] : '');
                       ?>
                     </select>
                     at
                     <select name="start_hour[]">
                       <?php
                       $hours = array(); foreach( range(0,23) as $i ) $hours[] = sprintf("%02d", $i);
-                      echo form_options($hours, $scheme['start_hour']);
+                      echo form_options($hours, isset($scheme['start_hour']) ? $scheme['start_hour'] : '');
                       ?>
                     </select> :
                     <select name="start_minute[]">
                       <?php
                       $minutes = array(); foreach( range(0,59) as $i ) $minutes[] = sprintf("%02d", $i);
-                      echo form_options($minutes, $scheme['start_minute']);
+                      echo form_options($minutes, isset($scheme['start_minute']) ? $scheme['start_minute'] : '');
                       ?>
                     </select>
                   </span>
@@ -87,18 +87,18 @@
                   <span>
                     <select name="end_day[]">
                       <?php
-                      echo form_options_hash($days, $scheme['end_day']);
+                      echo form_options_hash($days, isset($scheme['end_day']) ? $scheme['end_day'] : '');
                       ?>
                     </select>
                     at
                     <select name="end_hour[]">
                       <?php
-                      echo form_options($hours, $scheme['end_hour']);
+                      echo form_options($hours, isset($scheme['end_hour']) ? $scheme['end_hour'] : '');
                       ?>
                     </select> :
                     <select name="end_minute[]">
                       <?php
-                      echo form_options($minutes, $scheme['end_minute']);
+                      echo form_options($minutes, isset($scheme['end_minute']) ? $scheme['end_minute'] : '');
                       ?>
                     </select>
                   </span>
@@ -119,7 +119,7 @@
             <input type="button" id="dialog-button-cancel" value="Cancel" style="margin-left: 10px;" />
           </div>
 
-          <input type="hidden" name="scheme" value="<?php echo $item['scheme']; ?>"/>
+          <input type="hidden" name="scheme" value="<?php echo isset($item['scheme']) ? htmlspecialchars($item['scheme']) : ''; ?>"/>
           <input type="hidden" name="r" value="_xSkimSchemesDynamicEdit"/>
         </form>
 

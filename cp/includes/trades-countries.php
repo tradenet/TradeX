@@ -27,34 +27,64 @@
 
 <script language="JavaScript" type="text/javascript">
 var ammap = null;
+var rufflePlayer = null;
 
 function reloadData(stat, src)
 {
-    $(ammap).css({visibility: 'hidden'});
-    ammap.reloadData('index.php?r=_xTradesCountriesData&stat=' + stat + '&domain=<?php echo $item['domain']; ?>');
-    $(src).addClass('option-selected').siblings().removeClass('option-selected');
+    if (rufflePlayer) {
+        $('#ammap').css({visibility: 'hidden'});
+        // Reload the SWF with new data URL
+        var dataUrl = 'index.php?r=_xTradesCountriesData&stat=' + stat + '&domain=<?php echo $item['domain']; ?>';
+        rufflePlayer.contentWindow.postMessage({type: 'reloadData', url: dataUrl}, '*');
+        $(src).addClass('option-selected').siblings().removeClass('option-selected');
+    }
 }
 
 function amMapCompleted(map_id)
 {
-    ammap = document.getElementById('ammap-object');
-    $(ammap).css({visibility: 'visible'});
+    ammap = document.getElementById('ammap-ruffle-object');
+    if (ammap) {
+        $(ammap).css({visibility: 'visible'});
+    }
 }
 
 function amProcessCompleted(map_id, process_name)
 {
     if( process_name == 'reloadData' )
     {
-        $(ammap).css({visibility: 'visible'});
+        $('#ammap').css({visibility: 'visible'});
     }
 }
 
-var so = new SWFObject("swf/ammap.swf", "ammap-object", "800", "400", "8", "#ffffff");
-so.addParam('map_id', 'ammap-object');
-so.addVariable("path", "swf/");
-so.addVariable("data_file", escape("index.php?r=_xTradesCountriesData&stat=In&domain=<?php echo $item['domain']; ?>"));
-so.addVariable("settings_file", escape("assets/ammap-settings.xml"));
-so.write("ammap");
+// Initialize Ruffle
+window.RufflePlayer = window.RufflePlayer || {};
+window.RufflePlayer.config = {
+    "autoplay": "on",
+    "unmuteOverlay": "hidden",
+    "backgroundColor": "#ffffff"
+};
+
+$(document).ready(function() {
+    const ruffle = window.RufflePlayer.newest();
+    rufflePlayer = ruffle.createPlayer();
+    rufflePlayer.id = "ammap-ruffle-object";
+    rufflePlayer.style.width = "800px";
+    rufflePlayer.style.height = "400px";
+    
+    // Set Flash variables as URL parameters
+    var swfUrl = "swf/ammap.swf?" + 
+        "path=" + encodeURIComponent("swf/") + "&" +
+        "data_file=" + encodeURIComponent("index.php?r=_xTradesCountriesData&stat=In&domain=<?php echo $item['domain']; ?>") + "&" +
+        "settings_file=" + encodeURIComponent("assets/ammap-settings.xml") + "&" +
+        "map_id=ammap-ruffle-object";
+    
+    const container = document.getElementById('ammap');
+    container.innerHTML = '';
+    container.appendChild(rufflePlayer);
+    rufflePlayer.load(swfUrl).then(() => {
+        $(rufflePlayer).css({visibility: 'visible'});
+    });
+});
 
 $('span.option')
 .click(function()

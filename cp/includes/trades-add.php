@@ -1,3 +1,54 @@
+      <?php
+      // Ensure all expected array keys exist with default values
+      $item_defaults = array(
+          'return_url' => '',
+          'status' => '',
+          'color' => '',
+          'flag_toplist' => false,
+          'flag_grabber' => false,
+          'flag_confirm' => false,
+          'email' => '',
+          'password' => '',
+          'nickname' => '',
+          'icq' => '',
+          'site_name' => '',
+          'site_description' => '',
+          'groups' => array(),
+          'categories' => array(),
+          'grabber_url' => '',
+          'trigger_strings' => '',
+          'custom_thumbs' => '',
+          'banner' => '',
+          'notes' => '',
+          'force_instant' => '',
+          'flag_force_instant_high' => false,
+          'force_hourly' => '',
+          'force_hourly_end' => '',
+          'skim_scheme' => '',
+          'trade_weight' => '',
+          'push_to' => '',
+          'push_weight' => '',
+          'start_raws' => '',
+          'start_clicks' => '',
+          'start_prod' => '',
+          'min_raws' => '',
+          'min_clicks' => '',
+          'min_prod' => '',
+          'max_out' => '',
+          'hourly_cap' => '',
+          'daily_cap' => '',
+          'excludes' => array(),
+          'flag_external' => false,
+          'domain' => ''
+      );
+      
+      if( !isset($item) || !is_array($item) )
+      {
+          $item = array();
+      }
+      
+      $item = array_merge($item_defaults, $item);
+      ?>
       <div id="dialog-content">
 
         <div id="dialog-header">

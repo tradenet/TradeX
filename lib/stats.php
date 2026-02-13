@@ -159,7 +159,7 @@ function load_overall_stats($directory, $trades, $outlist_positions = FALSE)
             {
                 $ints = fread($fp, 8);
 
-                if( feof($fp) )
+                if( feof($fp) || strlen($ints) < 8 )
                 {
                     break;
                 }
@@ -179,11 +179,29 @@ function load_overall_stats($directory, $trades, $outlist_positions = FALSE)
         $domain = $trade['domain'];
         $file = $directory . '/' . $domain;
 
+        // Check if file exists and is readable
+        if (!file_exists($file) || !is_readable($file)) {
+            continue;
+        }
+
         $rt24 = array_fill(1, STATS_PER_RECORD, 0);
-        $fp = fopen($file, 'r');
+        $fp = @fopen($file, 'r');
+        
+        // Check if file was opened successfully
+        if ($fp === false) {
+            continue;
+        }
+        
         for( $i = 0; $i < HOURS_PER_DAY; $i++ )
         {
-            $r = unpack('L' . STATS_PER_RECORD, fread($fp, RECORD_SIZE_STATS));
+            $data = fread($fp, RECORD_SIZE_STATS);
+            
+            // Validate we got enough data
+            if (strlen($data) < RECORD_SIZE_STATS) {
+                break;
+            }
+            
+            $r = unpack('L' . STATS_PER_RECORD, $data);
             foreach( $r as $j => $k )
             {
                 $rt24[$j] += $k;
@@ -195,7 +213,14 @@ function load_overall_stats($directory, $trades, $outlist_positions = FALSE)
         for( $i = 0; $i < MINUTES_PER_HOUR; $i++ )
         {
             //$minute++;
-            $r = unpack('L' . STATS_PER_RECORD, fread($fp, RECORD_SIZE_STATS));
+            $data = fread($fp, RECORD_SIZE_STATS);
+            
+            // Validate we got enough data
+            if (strlen($data) < RECORD_SIZE_STATS) {
+                break;
+            }
+            
+            $r = unpack('L' . STATS_PER_RECORD, $data);
             foreach( $r as $j => $k )
             {
                 $rt60[$j] += $k;
@@ -240,10 +265,28 @@ function load_site_stats()
     {
         $file = get_trade_stats_dir($trade['domain']) . '/' . $trade['domain'];
 
-        $fp = fopen($file, 'r');
+        // Check if file exists and is readable
+        if (!file_exists($file) || !is_readable($file)) {
+            continue;
+        }
+
+        $fp = @fopen($file, 'r');
+        
+        // Check if file was opened successfully
+        if ($fp === false) {
+            continue;
+        }
+        
         for( $i = 0; $i < HOURS_PER_DAY; $i++ )
         {
-            $r = unpack('L' . STATS_PER_RECORD, fread($fp, RECORD_SIZE_STATS));
+            $data = fread($fp, RECORD_SIZE_STATS);
+            
+            // Validate we got enough data
+            if (strlen($data) < RECORD_SIZE_STATS) {
+                break;
+            }
+            
+            $r = unpack('L' . STATS_PER_RECORD, $data);
             foreach( $r as $j => $k )
             {
                 $rt24[$j] += $k;
@@ -254,7 +297,14 @@ function load_site_stats()
         for( $i = 0; $i < MINUTES_PER_HOUR; $i++ )
         {
             $minute++;
-            $r = unpack('L' . STATS_PER_RECORD, fread($fp, RECORD_SIZE_STATS));
+            $data = fread($fp, RECORD_SIZE_STATS);
+            
+            // Validate we got enough data
+            if (strlen($data) < RECORD_SIZE_STATS) {
+                break;
+            }
+            
+            $r = unpack('L' . STATS_PER_RECORD, $data);
             foreach( $r as $j => $k )
             {
                 $rt60[$j] += $k;
@@ -295,22 +345,24 @@ class StatsHourly
     var $skim_24 = 0;
     var $return_24 = 0;
 
-    function StatsHourly($trade = null)
+    function __construct($trade = null)
     {
+        // Initialize all arrays regardless of trade type
+        for( $i = 0; $i < HOURS_PER_DAY; $i++ )
+        {
+            $this->i_raw[$i] = 0;
+            $this->o_raw[$i] = 0;
+            $this->c_raw[$i] = 0;
+            $this->c_trades[$i] = 0;
+            $this->prod[$i] = 0;
+            $this->t_prod[$i] = 0;
+            $this->skim[$i] = 0;
+            $this->return[$i] = 0;
+        }
+        
         if( !is_array($trade) )
         {
             $this->trade = array('domain' => $trade);
-            for( $i = 0; $i < HOURS_PER_DAY; $i++ )
-            {
-                $this->i_raw[$i] = 0;
-                $this->o_raw[$i] = 0;
-                $this->c_raw[$i] = 0;
-                $this->c_trades[$i] = 0;
-                $this->prod[$i] = 0;
-                $this->t_prod[$i] = 0;
-                $this->skim[$i] = 0;
-                $this->return[$i] = 0;
-            }
         }
         else
         {
@@ -348,10 +400,28 @@ class StatsHourly
 
     function _read_stats()
     {
-        $fp = fopen($this->file, 'r');
+        // Check if file exists and is readable
+        if (!file_exists($this->file) || !is_readable($this->file)) {
+            return;
+        }
+        
+        $fp = @fopen($this->file, 'r');
+        
+        // Check if file was opened successfully
+        if ($fp === false) {
+            return;
+        }
+        
         for( $i = 0; $i < HOURS_PER_DAY; $i++ )
         {
-            $r = unpack('L' . STATS_PER_RECORD, fread($fp, RECORD_SIZE_STATS));
+            $data = fread($fp, RECORD_SIZE_STATS);
+            
+            // Validate we got enough data
+            if (strlen($data) < RECORD_SIZE_STATS) {
+                break;
+            }
+            
+            $r = unpack('L' . STATS_PER_RECORD, $data);
 
             $this->i_raw[$i] = $r[1];
             $this->i_raw_24 += $r[1];
@@ -493,7 +563,7 @@ class StatsOverall
     var $pos_outlist_forces = NULL;
     var $ignore_requirements = FALSE;
 
-    function StatsOverall($trade, $stats60 = null, $stats24 = null)
+    function __construct($trade, $stats60 = null, $stats24 = null)
     {
         $this->trade = $trade;
 
@@ -1103,7 +1173,7 @@ class StatsHistory
     var $history_file;
     var $stats;
 
-    function StatsHistory($trade, $start, $end, $regex_replace)
+    function __construct($trade, $start, $end, $regex_replace)
     {
         $this->trade = $trade;
         $this->history_file = empty($trade) ? DIR_DATA . '/history' : (is_system_trade($trade) ? DIR_SYSTEM_STATS : DIR_TRADE_STATS) . "/$trade-history";

@@ -1,4 +1,20 @@
       <?php
+      // Ensure all expected array keys exist with default values
+      $item_defaults = array(
+          'toplist_id' => '',
+          'source' => '',
+          'template' => '',
+          'infile' => '',
+          'outfile' => '',
+          'groups' => array(),
+          'categories' => array(),
+          'flag_thumbs_only' => false,
+          'trade_sources' => array(''),
+          'sort_by' => '',
+          'req_field' => array(''),
+          'req_operator' => array(''),
+          'req_value' => array('')
+      );
 
       $editing = !empty($item);
       if( !$editing )
@@ -6,6 +22,35 @@
           require_once 'textdb.php';
           $db = new ToplistsDB();
           $item = $db->Defaults();
+      }
+      
+      // Ensure $item is an array and merge with defaults
+      if( !isset($item) || !is_array($item) )
+      {
+          $item = array();
+      }
+      
+      $item = array_merge($item_defaults, $item);
+      
+      // Ensure array fields are always arrays (not strings)
+      if( !is_array($item['trade_sources']) )
+      {
+          $item['trade_sources'] = !empty($item['trade_sources']) ? array($item['trade_sources']) : array('');
+      }
+      
+      if( !is_array($item['req_field']) )
+      {
+          $item['req_field'] = !empty($item['req_field']) ? array($item['req_field']) : array('');
+      }
+      
+      if( !is_array($item['req_value']) )
+      {
+          $item['req_value'] = !empty($item['req_value']) ? array($item['req_value']) : array('');
+      }
+      
+      if( !is_array($item['req_operator']) )
+      {
+          $item['req_operator'] = !empty($item['req_operator']) ? array($item['req_operator']) : array('');
       }
 
       $trade_sources = array(
@@ -194,7 +239,7 @@
                       <option value=""></option>
                       <?php
                       $operators = array('>', '>=', '<', '<=');
-                      echo form_options($operators, $original['req_operator'][$i]);
+                      echo form_options($operators, $item['req_operator'][$i]);
                       ?>
                     </select>
 

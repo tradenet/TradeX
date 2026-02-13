@@ -230,9 +230,15 @@ function _stats_hourly_table_row($sh, $menu = 'trade-action-menu')
 {
     global $current_hour;
 
+    // Safety check: ensure trade property exists and is an array
+    if (!isset($sh->trade) || !is_array($sh->trade)) {
+        return;
+    }
+
     $domain = htmlspecialchars($sh->trade['domain']);
-    $status = $sh->trade['status'];
+    $status = isset($sh->trade['status']) ? $sh->trade['status'] : '';
     $status_lc = strtolower($status);
+    $system = ($menu == 'system-action-menu');
 ?>
         <tr <?php if( !empty($sh->trade['color']) ) echo 'style="background-color: ' . $sh->trade['color'] . ';"'; ?> id="item-<?php echo $domain; ?>" class="ta-right">
           <?php if( !empty($menu) ): ?>

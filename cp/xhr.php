@@ -26,7 +26,7 @@ prepare_request();
 
 if( ($auth_error = cp_authenticate()) === true )
 {
-    cp_exec($_REQUEST['r'], '_xFunctionMissing');
+    cp_exec($_REQUEST['r'] ?? '', '_xFunctionMissing');
 }
 else
 {
@@ -168,7 +168,18 @@ function _xUpdateExtractInstaller()
     $fp = fopen($installer_file, 'r');
     while( !feof($fp) )
     {
-        list($type, $name, $permissions, $su_permissions, $on_install, $on_patch, $chunk, $b64contents) = explode('|', trim(fgets($fp)));
+        $line = trim(fgets($fp));
+        if( empty($line) )
+        {
+            continue;
+        }
+        
+        $parts = explode('|', $line, 8);
+        if( count($parts) < 8 )
+        {
+            continue;
+        }
+        list($type, $name, $permissions, $su_permissions, $on_install, $on_patch, $chunk, $b64contents) = $parts;
 
         $permissions = $_REQUEST['su'] ? octdec($su_permissions) : octdec($permissions);
 
@@ -2045,7 +2056,12 @@ function _xSearchEnginesSave()
 
     foreach( explode(STRING_LF_UNIX, $engines) as $line )
     {
-        list($domain, $param) = explode('|', $line);
+        $parts = explode('|', $line, 2);
+        if( count($parts) < 2 )
+        {
+            continue;
+        }
+        list($domain, $param) = $parts;
         $domains[] = $domain;
         $params[] = $param;
     }
@@ -2103,7 +2119,12 @@ function _xChangeLogin()
 
     $v =& Validator::Get();
 
-    list($username, $password) = explode('|', file_first_line(FILE_CP_USER));
+    $parts = explode('|', file_first_line(FILE_CP_USER));
+    if( count($parts) < 2 )
+    {
+        return JSON::Error('Unable to read user data file');
+    }
+    list($username, $password) = $parts;
 
     $v->Register($_REQUEST['username'], VT_NOT_EMPTY, 'The Username field is required');
     $v->Register($_REQUEST['password'], VT_NOT_EMPTY, 'The Password field is required');

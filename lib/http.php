@@ -54,7 +54,7 @@ class HTTP
 
     var $error = null;
 
-    function HTTP()
+    function __construct()
     {
     }
 
@@ -64,7 +64,7 @@ class HTTP
         return $this->_request($url, HTTP_METHOD_GET, $referrer);
     }
 
-    function POST($url, $data = array(), $referrer = null)
+    function POST($url, $data = array(), $referrer = null, $allow_redirect = false)
     {
         $this->_reset($url, $allow_redirect);
         return $this->_request($url, HTTP_METHOD_POST, $referrer, $data);
@@ -76,9 +76,9 @@ class HTTP
 
         if( ($parsed_url = parse_url($url)) !== false )
         {
-            $scheme = strtolower($parsed_url['scheme']);
-            $hostname = $parsed_url['host'];
-            $port = $parsed_url['port'];
+            $scheme = isset($parsed_url['scheme']) ? strtolower($parsed_url['scheme']) : 'http';
+            $hostname = isset($parsed_url['host']) ? $parsed_url['host'] : '';
+            $port = isset($parsed_url['port']) ? $parsed_url['port'] : null;
 
             // Resolve hostname
             $ip_address = gethostbyname($hostname);
@@ -232,7 +232,7 @@ class HTTP
 
         // Generate request headers
         $request = "$method $uri HTTP/1.0$crlf" .
-                   "Host: {$parsed_url['host']}$crlf" .
+                   "Host: " . (isset($parsed_url['host']) ? $parsed_url['host'] : 'localhost') . "$crlf" .
                    "User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/532.5 (KHTML, like Gecko) Chrome/4.0.249.43 Safari/532.5$crlf" .
                    "Accept: application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5$crlf" .
                    "Accept-Language: en-US,en;q=0.8$crlf" .
@@ -265,7 +265,7 @@ class HTTP
         }
 
         $parsed = parse_url($start_url);
-        $base_url = $parsed['scheme'] . '://' . $parsed['host'] . (isset($parsed['port']) ? ':' . $parsed['port'] : '');
+        $base_url = (isset($parsed['scheme']) ? $parsed['scheme'] : 'http') . '://' . (isset($parsed['host']) ? $parsed['host'] : 'localhost') . (isset($parsed['port']) ? ':' . $parsed['port'] : '');
 
         if( $relative_url[0] == '/' )
         {
@@ -274,9 +274,10 @@ class HTTP
         else
         {
             // Strip filename from path
-            $parsed['path'] = preg_replace('~[^/]+$~', '', $parsed['path']);
+            $path = isset($parsed['path']) ? $parsed['path'] : '/';
+            $path = preg_replace('~[^/]+$~', '', $path);
 
-            return $base_url . $this->_resolve_path($parsed['path'] . $relative_url);
+            return $base_url . $this->_resolve_path($path . $relative_url);
         }
     }
 

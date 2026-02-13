@@ -246,8 +246,14 @@ function _stats_overall_table_header($item = 'Trade', $checkbox = true)
 
 function _stats_overall_table_row($so, $menu = 'trade-action-menu', $system = false)
 {
+    // Ensure trade data exists and is an array
+    if( !isset($so->trade) || !is_array($so->trade) )
+    {
+        return;
+    }
+    
     $domain = htmlspecialchars($so->trade['domain']);
-    $status = isset($so->trade['status']) ? $so->trade['status'] : null;
+    $status = isset($so->trade['status']) ? $so->trade['status'] : '';
     $status_lc = strtolower($status);
 ?>
         <tr <?php if( !empty($so->trade['color']) ) echo 'style="background-color: ' . $so->trade['color'] . ';"'; ?> id="item-<?php echo $domain; ?>" class="ta-right">

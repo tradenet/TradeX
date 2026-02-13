@@ -29,11 +29,21 @@ class TextDB
 
     function Clear()
     {
+        if( $this->db_file === null )
+        {
+            return;
+        }
+
         file_write($this->db_file, '');
     }
 
     function Delete($item_id)
     {
+        if( $this->db_file === null )
+        {
+            return;
+        }
+
         $fp_r = fopen($this->db_file, 'r');
         $fp_w = fopen($this->db_file, 'r+');
         flock($fp_w, LOCK_EX);
@@ -66,6 +76,11 @@ class TextDB
 
     function Add($data)
     {
+        if( $this->db_file === null )
+        {
+            return null;
+        }
+
         $fp = fopen($this->db_file, file_exists($this->db_file) ? 'r+' : 'w');
         flock($fp, LOCK_EX);
 
@@ -111,6 +126,11 @@ class TextDB
 
     function Update($item_id, $new_data)
     {
+        if( $this->db_file === null )
+        {
+            return null;
+        }
+
         // Don't overwrite primary key
         unset($new_data[$this->primary_key]);
 
@@ -185,6 +205,11 @@ class TextDB
 
     function Retrieve($item_id)
     {
+        if( $this->db_file === null )
+        {
+            return null;
+        }
+
         $item = null;
         $fp = fopen($this->db_file, 'r');
         flock($fp, LOCK_SH);
@@ -220,6 +245,11 @@ class TextDB
 
     function RetrieveAll($sorter = null, $desc = false)
     {
+        if( $this->db_file === null )
+        {
+            return array();
+        }
+
         $this->desc = $desc;
         if( !empty($sorter) )
         {
@@ -265,6 +295,11 @@ class TextDB
 
     function Count()
     {
+        if( $this->db_file === null )
+        {
+            return 0;
+        }
+
         $items = 0;
         $fp = fopen($this->db_file, 'r');
         flock($fp, LOCK_SH);
@@ -373,6 +408,12 @@ class TextDB
     function _defaults()
     {
         $defaults = array();
+        
+        if( !is_array($this->fields) )
+        {
+            return $defaults;
+        }
+        
         foreach( $this->fields as $field )
         {
             $defaults[$field] = STRING_BLANK;
@@ -385,7 +426,7 @@ class TextDB
 class ToplistsDB extends TextDB
 {
 
-    function ToplistsDB()
+    function __construct()
     {
         $this->db_file = FILE_TOPLISTS;
         $this->primary_key = 'toplist_id';
@@ -420,7 +461,7 @@ class ToplistsDB extends TextDB
 class NetworkDB extends TextDB
 {
 
-    function NetworkDB()
+    function __construct()
     {
         $this->db_file = FILE_NETWORK_SITES;
         $this->primary_key = 'domain';
@@ -444,7 +485,7 @@ class NetworkDB extends TextDB
 class CaptchasDB extends TextDB
 {
 
-    function CaptchasDB()
+    function __construct()
     {
         $this->db_file = FILE_CAPTCHAS;
         $this->primary_key = 'session';
@@ -477,7 +518,7 @@ class CaptchasDB extends TextDB
 class RegisterConfirmsDB extends TextDB
 {
 
-    function RegisterConfirmsDB()
+    function __construct()
     {
         $this->db_file = FILE_REGISTER_CONFIRMS;
         $this->primary_key = 'confirm_id';
@@ -510,7 +551,7 @@ class RegisterConfirmsDB extends TextDB
 class PasswordConfirmsDB extends TextDB
 {
 
-    function PasswordConfirmsDB()
+    function __construct()
     {
         $this->db_file = FILE_PASSWORD_CONFIRMS;
         $this->primary_key = 'confirm_id';
@@ -543,7 +584,7 @@ class PasswordConfirmsDB extends TextDB
 class SkimSchemesDynamicDB extends TextDB
 {
 
-    function SkimSchemesDynamicDB()
+    function __construct()
     {
         $this->db_file = FILE_TOPLISTS;
         $this->primary_key = 'start_day';

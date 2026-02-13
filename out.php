@@ -16,7 +16,6 @@
 
 
 @ini_set('memory_limit', -1);
-@set_magic_quotes_runtime(0);
 @set_time_limit(0);
 
 
@@ -239,26 +238,32 @@ if( $to_trade && file_exists("data/trade_stats/$send_to_trade") )
 
     // Seek to hour, read, update
     fseek($fp, $hour_offset, SEEK_SET);
-    $r = unpack($pack_arg, fread($fp, $out_size));
-    $r[1]++;
-    if( $unique ) $r[2]++;
-    if( $g_session['p'] ) $r[3]++;
-    $r[4 + $g_session['cq']]++;
-    if( $g_force_type == 'I' ) $r[7]++;
-    if( $g_force_type == 'H' ) $r[8]++;
-    fseek($fp, -$out_size, SEEK_CUR);
-    fwrite($fp, pack($pack_arg, $r[1], $r[2], $r[3], $r[4], $r[5], $r[6], $r[7], $r[8]), $out_size);
+    $data = fread($fp, $out_size);
+    if (strlen($data) >= $out_size) {
+        $r = unpack($pack_arg, $data);
+        $r[1]++;
+        if( $unique ) $r[2]++;
+        if( $g_session['p'] ) $r[3]++;
+        $r[4 + $g_session['cq']]++;
+        if( $g_force_type == 'I' ) $r[7]++;
+        if( $g_force_type == 'H' ) $r[8]++;
+        fseek($fp, -$out_size, SEEK_CUR);
+        fwrite($fp, pack($pack_arg, $r[1], $r[2], $r[3], $r[4], $r[5], $r[6], $r[7], $r[8]), $out_size);
+    }
 
     // Seek to minute, read, update
     fseek($fp, $minute_offset, SEEK_SET);
-    $r = unpack($pack_arg, fread($fp, $out_size));
-    $r[1]++;
-    if( $unique ) $r[2]++;
-    if( $g_session['p'] ) $r[3]++;
-    $r[4 + $g_session['cq']]++;
-    if( $g_force_type == 'I' ) $r[7]++;
-    if( $g_force_type == 'H' ) $r[8]++;
-    fseek($fp, -$out_size, SEEK_CUR);
+    $data = fread($fp, $out_size);
+    if (strlen($data) >= $out_size) {
+        $r = unpack($pack_arg, $data);
+        $r[1]++;
+        if( $unique ) $r[2]++;
+        if( $g_session['p'] ) $r[3]++;
+        $r[4 + $g_session['cq']]++;
+        if( $g_force_type == 'I' ) $r[7]++;
+        if( $g_force_type == 'H' ) $r[8]++;
+        fseek($fp, -$out_size, SEEK_CUR);
+    }
     fwrite($fp, pack($pack_arg, $r[1], $r[2], $r[3], $r[4], $r[5], $r[6], $r[7], $r[8]), $out_size);
 
     flock($fp, LOCK_UN);
@@ -293,24 +298,31 @@ if( file_exists($statsfile) )
 
     // Seek to hour, read, update
     fseek($fp, $hour_offset, SEEK_SET);
-    $r = unpack($pack_arg, fread($fp, $click_size));
-    $r[1]++;
-    if( $unique ) $r[2]++;
-    if( $g_session['p'] ) $r[3]++;
-    if( $to_trade ) $r[4]++;
-    $r[6 + $g_session['cq']]++;
-    fseek($fp, -$click_size, SEEK_CUR);
-    fwrite($fp, pack($pack_arg, $r[1], $r[2], $r[3], $r[4], $r[5], $r[6]), $click_size);
+    $data = fread($fp, $click_size);
+    if (strlen($data) >= $click_size) {
+        $r = unpack($pack_arg, $data);
+        $r[1]++;
+        if( $unique ) $r[2]++;
+        if( $g_session['p'] ) $r[3]++;
+        if( $to_trade ) $r[4]++;
+        $r[6 + $g_session['cq']]++;
+        fseek($fp, -$click_size, SEEK_CUR);
+        fwrite($fp, pack($pack_arg, $r[1], $r[2], $r[3], $r[4], $r[5], $r[6]), $click_size);
+    }
 
     // Seek to minute, read, update
     fseek($fp, $minute_offset, SEEK_SET);
-    $r = unpack($pack_arg, fread($fp, $click_size));
-    $r[1]++;
-    if( $unique ) $r[2]++;
-    if( $g_session['p'] ) $r[3]++;
-    $r[6 + $g_session['cq']]++;
-    fseek($fp, -$click_size, SEEK_CUR);
-    fwrite($fp, pack($pack_arg, $r[1], $r[2], $r[3], $r[4], $r[5], $r[6]), $click_size);
+    $data = fread($fp, $click_size);
+    if (strlen($data) >= $click_size) {
+        $r = unpack($pack_arg, $data);
+        $r[1]++;
+        if( $unique ) $r[2]++;
+        if( $g_session['p'] ) $r[3]++;
+        if( $to_trade ) $r[4]++;
+        $r[6 + $g_session['cq']]++;
+        fseek($fp, -$click_size, SEEK_CUR);
+        fwrite($fp, pack($pack_arg, $r[1], $r[2], $r[3], $r[4], $r[5], $r[6]), $click_size);
+    }
 
     flock($fp, LOCK_UN);
     fclose($fp);
@@ -333,17 +345,23 @@ if( !empty($g_session['ca']) )
 
         // Seek to hour, read, update
         fseek($fp, $hour_offset, SEEK_SET);
-        $r = unpack($pack_arg, fread($fp, $ca_size));
-        $r[1]++;
-        fseek($fp, -$ca_size, SEEK_CUR);
-        fwrite($fp, pack($pack_arg, $r[1]), $ca_size);
+        $data = fread($fp, $ca_size);
+        if (strlen($data) >= $ca_size) {
+            $r = unpack($pack_arg, $data);
+            $r[1]++;
+            fseek($fp, -$ca_size, SEEK_CUR);
+            fwrite($fp, pack($pack_arg, $r[1]), $ca_size);
+        }
 
         // Seek to minute, read, update
         fseek($fp, $minute_offset, SEEK_SET);
-        $r = unpack($pack_arg, fread($fp, $ca_size));
-        $r[1]++;
-        fseek($fp, -$ca_size, SEEK_CUR);
-        fwrite($fp, pack($pack_arg, $r[1]), $ca_size);
+        $data = fread($fp, $ca_size);
+        if (strlen($data) >= $ca_size) {
+            $r = unpack($pack_arg, $data);
+            $r[1]++;
+            fseek($fp, -$ca_size, SEEK_CUR);
+            fwrite($fp, pack($pack_arg, $r[1]), $ca_size);
+        }
 
         flock($fp, LOCK_UN);
         fclose($fp);
@@ -442,7 +460,7 @@ function select_trade($trade)
         {
             $ints = fread($fp, 8);
 
-            if( feof($fp) )
+            if( feof($fp) || strlen($ints) < 8 )
             {
                 break;
             }

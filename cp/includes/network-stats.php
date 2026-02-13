@@ -5,6 +5,8 @@ require_once 'stats.php';
 require_once 'textdb.php';
 
 $_REQUEST['cache'] = isset($_REQUEST['cache']) ? $_REQUEST['cache'] : 5;
+$_REQUEST['owner'] = isset($_REQUEST['owner']) ? $_REQUEST['owner'] : '';
+$_REQUEST['category'] = isset($_REQUEST['category']) ? $_REQUEST['category'] : '';
 
 $values = unserialize(file_get_contents(FILE_NETWORK_SITES_VALUES));
 $cache = unserialize(file_get_contents(FILE_NETWORK_SITES_CACHE));
@@ -66,7 +68,8 @@ $db = new NetworkDB();
 
       foreach( $db->RetrieveAll() as $site )
       {
-          if( !$site['flag_stats'] )
+          // Ensure site is an array
+          if( !is_array($site) || !$site['flag_stats'] )
           {
               continue;
           }
@@ -74,6 +77,12 @@ $db = new NetworkDB();
           if( isset($cache[$site['domain']]) && $cache[$site['domain']]['timestamp'] >= time() - 300 )
           {
               $so = $cache[$site['domain']]['so'];
+              
+              // Validate cached object has proper trade data
+              if (!isset($so->trade) || !is_array($so->trade)) {
+                  $so = new StatsOverall($site);
+                  $so->SetUnknown();
+              }
           }
           else
           {
@@ -187,11 +196,16 @@ function _stats_network_table_header($item = 'Network Site', $checkbox = true)
 
 function _stats_network_table_row($so, $site, $menu = 'site-action-menu')
 {
+    // Safety check: ensure trade property exists and is an array
+    if (!isset($so->trade) || !is_array($so->trade) || !isset($so->trade['domain'])) {
+        return;
+    }
+
     $id = $so->trade['domain'];
     $domain = htmlspecialchars($so->trade['domain']);
-    $status = $so->trade['status'];
+    $status = isset($so->trade['status']) ? $so->trade['status'] : '';
     $status_lc = strtolower($status);
-    $site = string_htmlspecialchars($site);
+    $site = is_array($site) ? string_htmlspecialchars($site) : null;
 ?>
         <tr <?php if( !empty($so->trade['color']) ) echo 'bgcolor="' . $so->trade['color'] . '"'; ?> id="item-<?php echo $id; ?>" class="ta-right<?php if( $so->i_raw_60 === STATS_UNKNOWN ) echo ' unknown'; ?>">
           <?php if( !empty($menu) ): ?>
@@ -200,7 +214,7 @@ function _stats_network_table_row($so, $site, $menu = 'site-action-menu')
           </td>
           <?php endif; ?>
           <td class="va-middle" style="padding-right: 4px;"<?php if( empty($menu) ): ?> colspan="2"<?php endif; ?>>
-            <?php if( !empty($menu) ): ?>
+            <?php if( !empty($menu) && !empty($site) ): ?>
             <a href="<?php echo $site['url']; ?>" class="cp-login fw-bold" cpurl="<?php echo $site['url']; ?>" cppass="<?php echo $site['password']; ?>" cpuser="<?php echo $site['username']; ?>" target="_blank"><?php echo $domain; ?></a>
             <span class="icon-menu-container" menu="#<?php echo $menu; ?>" style="position: relative;"><img src="images/actions-16x16.png"/></span>
             <?php else: ?>

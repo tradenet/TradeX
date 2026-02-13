@@ -71,7 +71,7 @@ class Validator
 
     var $set_errors;
 
-    function Validator()
+    function __construct()
     {
         $this->Reset();
     }
@@ -268,7 +268,10 @@ class Validator
             }
 
             // Merge validation errors with manually set error messages
-            $this->failed = array_merge($this->failed, $this->set_errors);
+            $this->failed = array_merge(
+                is_array($this->failed) ? $this->failed : array(),
+                is_array($this->set_errors) ? $this->set_errors : array()
+            );
         }
 
         if( $callback != null && function_exists($callback) )
@@ -284,7 +287,7 @@ class Validator
         return ((count($this->failed) > 0) ? $this->failed : null);
     }
 
-    function &Get()
+    static function &Get()
     {
         static $self = null;
 

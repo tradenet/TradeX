@@ -16,11 +16,9 @@
 // Set PHP configuration options
 @ini_set('display_errors', 'On');
 @ini_set('memory_limit', -1);
-@ini_set('zend.ze1_compatibility_mode', 'Off');
 @ini_set('pcre.backtrack_limit', 1000000);
 @ini_set('default_charset', 'UTF-8');
 @ini_set('html_errors', 0);
-@set_magic_quotes_runtime(0);
 @set_time_limit(0);
 
 // Setup error reporting level
@@ -70,7 +68,7 @@ function process_request_vars($var)
 {
     return is_array($var) ?
            array_map('process_request_vars', $var) :
-           trim(get_magic_quotes_gpc() == 1 ? stripslashes($var) : $var);
+           trim($var);
 }
 
 function error_handler($errno, $errstr, $errfile, $errline)
