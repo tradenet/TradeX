@@ -25,21 +25,13 @@
       </div>
 
 <script language="JavaScript" type="text/javascript">
-var vChart = new Visifire('xap/SL.Visifire.Charts.xap', 'Visifire', 850, 400);
-vChart.preLoad = function(args)
-{
-    args[0].Rendered = function(sender, eventArgs)
-    {
-        $('#Visifire').css({visibility: 'visible'});
-    };
-};
+var vChart = new TradeXChart('TradeXChart', 850, 400);
 vChart.setDataUri('index.php?r=_xTradesGraphDataHourly&domain=<?php echo urlencode($item['domain']); ?>');
 vChart.render('vchart');
 
 $('span.option')
 .click(function()
 {
-    $('#Visifire').css({visibility: 'hidden'});
     $(this).addClass('option-selected').siblings().removeClass('option-selected');
     vChart.setDataUri('index.php?r=' + $(this).attr('fnc') + '&domain=<?php echo urlencode($item['domain']); ?>');
     vChart.render('vchart');

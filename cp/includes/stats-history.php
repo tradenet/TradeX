@@ -161,12 +161,12 @@ $('#button-show-stats')
 {
     if( chart_stats == null )
     {
-        chart_stats = new Visifire('xap/SL.Visifire.Charts.xap', 'chart_stats', 850, 400);
+        chart_stats = new TradeXChart('chart_stats', 850, 400);
     }
 
     if( chart_prod == null )
     {
-        chart_prod = new Visifire('xap/SL.Visifire.Charts.xap', 'chart_prod', 850, 400);
+        chart_prod = new TradeXChart('chart_prod', 850, 400);
     }
 
     var query_data = '&' + $('#form-historical-stats').formSerialize();

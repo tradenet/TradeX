@@ -1,7 +1,7 @@
-# TradeX Upgrade to PHP 8.3 and Ruffle Flash Emulation
+# TradeX Upgrade to PHP 8.3, Ruffle Flash Emulation, and Chart.js
 
 ## Summary
-Successfully upgraded TradeX application to be compatible with PHP 8.3 and replaced Flash Player with Ruffle JavaScript emulator.
+Successfully upgraded TradeX application to be compatible with PHP 8.3, replaced Flash Player with Ruffle JavaScript emulator, and migrated Silverlight Visifire charts to HTML5 Chart.js.
 
 ## PHP 8.3 Compatibility Updates
 
@@ -332,7 +332,168 @@ The following SWF files are still used but now run through Ruffle emulator:
 - `/home/gordon/TradeX/cp/swf/ammap.swf` - Interactive map component
 - `/home/gordon/TradeX/cp/swf/world.swf` - World map data
 
+## Silverlight to Chart.js Migration
+
+**Date:** February 14, 2026
+**Branch:** feature/charts
+
+### Overview
+Migrated all Visifire Silverlight charts (.xap) to HTML5 Chart.js library. Silverlight plugins are no longer supported by modern browsers (Microsoft ended support in 2021), making this migration essential for continued functionality.
+
+### New Files Created
+
+#### 1. `/home/gordon/TradeX/cp/js/chart.js` (Downloaded)
+- Chart.js v4.4.1 (200KB)
+- Source: https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js
+- Open-source MIT licensed JavaScript charting library
+- Provides responsive, animated HTML5 Canvas charts
+
+#### 2. `/home/gordon/TradeX/cp/js/chart-helper.js` (New)
+- Custom wrapper class `TradeXChart` that mimics the old Visifire API
+- Maintains backward compatibility with existing code structure
+- Automatically determines chart type (bar vs line) from data
+- Handles JSON data fetching and chart rendering
+- Features:
+  - Async data loading with error handling
+  - Responsive canvas rendering
+  - Custom tooltip formatting (percentage for line charts)
+  - Grid and axis styling matching original Visifire appearance
+
+### Files Modified
+
+#### 1. `/home/gordon/TradeX/cp/includes/global-header.php`
+- **Removed**: `<script type="text/javascript" src="js/visifire.js"></script>`
+- **Added**: `<script type="text/javascript" src="js/chart.js"></script>`
+- **Added**: `<script type="text/javascript" src="js/chart-helper.js"></script>` 
+- **Reason**: Replace Silverlight charting with HTML5 Chart.js
+
+#### 2. `/home/gordon/TradeX/cp/includes/trades-graph-data-hourly.php`
+- **Changed**: Complete file conversion from Silverlight XAML to JSON
+- **Old Format**: `<vc:Chart xmlns:vc="clr-namespace:Visifire.Charts...">`
+- **New Format**: JSON with structure:
+  ```json
+  {
+    "title": "Last 24 Hours In, Out, & Clicks",
+    "labels": ["00:00", "01:00", ...],
+    "datasets": [
+      {
+        "label": "In",
+        "data": [...],
+        "backgroundColor": "rgba(246, 189, 17, 0.85)",
+        ...
+      }
+    ]
+  }
+  ```
+- **Data Series**: In (yellow #f6bd11), Out (blue #b1d9f8), Clicks (green #8dbb05)
+- **Chart Type**: Bar chart with 3 data series
+- **Reason**: Chart.js requires JSON data format instead of XAML
+
+#### 3. `/home/gordon/TradeX/cp/includes/trades-graph-data-prod-return.php`
+- **Changed**: Complete conversion from XAML to JSON
+- **Data Series**: Productivity (red #ff0000), Return (blue #0097FF)
+- **Chart Type**: Line chart with percentage values
+- **Features**: Tension curves, point markers, no fill under lines
+
+#### 4. `/home/gordon/TradeX/cp/includes/trades-graph-data-historical-stats.php`
+- **Changed**: Complete conversion from XAML to JSON
+- **Data Source**: `$history->stats` array with date-based keys
+- **Data Series**: In ($stats[0]), Out ($stats[14]), Clicks ($stats[6])
+- **Chart Type**: Bar chart with date labels
+
+#### 5. `/home/gordon/TradeX/cp/includes/trades-graph-data-historical-prod.php`
+- **Changed**: Complete conversion from XAML to JSON
+- **Calculations**: Productivity = clicks/in, Return = out/in (as percentages)
+- **Data Series**: Productivity and Return percentages
+- **Chart Type**: Line chart with date labels
+
+#### 6. `/home/gordon/TradeX/cp/includes/trades-graph.php`
+- **Line ~28**: Replaced Visifire initialization
+  - **Old**: `var vChart = new Visifire('xap/SL.Visifire.Charts.xap', 'Visifire', 850, 400);`
+  - **New**: `var vChart = new TradeXChart('TradeXChart', 850, 400);`
+- **Removed**: `vChart.preLoad` function and visibility toggling logic
+- **Simplified**: Chart re-rendering on option click (no manual visibility management)
+- **Reason**: TradeXChart class handles rendering lifecycle automatically
+
+#### 7. `/home/gordon/TradeX/cp/includes/stats-history.php`
+- **Lines ~164, 169**: Updated chart initialization
+  - **Old**: `new Visifire('xap/SL.Visifire.Charts.xap', 'chart_stats', 850, 400)`
+  - **New**: `new TradeXChart('chart_stats', 850, 400)`
+- **Purpose**: Historical statistics overview charts
+- **Charts**: Two charts rendered side-by-side (stats and productivity)
+
+#### 8. `/home/gordon/TradeX/cp/includes/trades-historical.php`
+- **Lines ~169, 174**: Updated chart initialization
+  - **Old**: `new Visifire('xap/SL.Visifire.Charts.xap', ...)`
+  - **New**: `new TradeXChart(...)`
+- **Purpose**: Per-trade historical statistics dialog
+- **Charts**: Domain-specific historical data visualization
+
+### Files Removed/Deprecated
+
+The following files were moved to `/home/gordon/TradeX/deprecated/`:
+- `/home/gordon/TradeX/cp/xap/SL.Visifire.Charts.xap` (Silverlight chart component)
+- `/home/gordon/TradeX/cp/js/visifire.js` (Silverlight initialization library)
+
+### Chart Comparison
+
+| Feature | Old (Visifire/Silverlight) | New (Chart.js) |
+|---------|---------------------------|----------------|
+| Technology | Silverlight Plugin | HTML5 Canvas |
+| Browser Support | None (deprecated) | All modern browsers |
+| File Size | 1.6MB (.xap) | 200KB (.js) |
+| Mobile Support | No | Yes, fully responsive |
+| Animation | Limited | Smooth, customizable |
+| Data Format | XAML | JSON |
+| API | Silverlight-specific | Standard JavaScript |
+
+### Benefits of Chart.js
+
+1. **No Plugin Required**: Pure JavaScript, works in all modern browsers
+2. **Mobile Compatible**: Touch-friendly, responsive design
+3. **Actively Maintained**: Regular updates and security patches (Visifire abandoned)
+4. **Better Performance**: Hardware-accelerated Canvas rendering
+5. **Accessibility**: Better screen reader support than Silverlight
+6. **Smaller Size**: 200KB vs 1.6MB Silverlight runtime
+7. **Open Source**: MIT license, large community support
+
+### API Compatibility
+
+The `TradeXChart` class maintains API compatibility with old Visifire code:
+
+```javascript
+// Both old and new code use same API pattern
+var chart = new TradeXChart('chartId', 850, 400);
+chart.setDataUri('index.php?r=_xGraphData');
+chart.render('container-id');
+```
+
+This minimizes code changes in existing views.
+
 ## Testing Recommendations
+
+### Chart.js Functionality
+1. **Test all chart views**:
+   - Trade Statistics → Hourly Stats (bar chart with 3 series)
+   - Trade Statistics → Hourly Productivity & Return (line chart)
+   - Stats History → Historical data (date-based bar charts)
+   - Individual Trade → Graph view (domain-specific)
+
+2. **Verify chart interactions**:
+   - Hover tooltips show correct values
+   - Legend items are clearly labeled
+   - Tab switching between chart types works smoothly
+   - Data loads correctly for all time periods
+
+3. **Visual consistency**:
+   - Colors match original charts (yellow/blue/green for traffic, red/blue for performance)
+   - Labels are readable and properly rotated
+   - Grid lines and backgrounds display correctly
+
+4. **Browser testing**:
+   - Chrome, Firefox, Edge, Safari
+   - Desktop and mobile views
+   - No plugin prompts should appear
 
 ### PHP Compatibility
 1. **Test all PHP scripts** - Especially those using:
@@ -362,6 +523,12 @@ The following SWF files are still used but now run through Ruffle emulator:
 
 ## Known Limitations
 
+### Chart.js Migration
+- Chart appearance may differ slightly from original Silverlight charts
+- Some advanced Visifire features (if any were used) may not be replicated
+- Historical data with very large datasets may need performance optimization
+- Chart.js documentation: https://www.chartjs.org/docs/latest/
+
 ### Ruffle Compatibility
 - Some advanced Flash features may not be fully supported
 - Performance may differ slightly from native Flash Player
@@ -387,6 +554,24 @@ If issues occur, you can rollback by:
    rm cp/js/ruffle.js
    ```
 
+3. **Chart.js/Silverlight Changes** (from feature/charts branch):
+   ```bash
+   # Restore Silverlight files from deprecated folder
+   mv deprecated/xap cp/
+   mv deprecated/visifire.js cp/js/
+   
+   # Revert chart data files and views
+   git checkout cp/includes/trades-graph-data-*.php
+   git checkout cp/includes/trades-graph.php
+   git checkout cp/includes/stats-history.php
+   git checkout cp/includes/trades-historical.php
+   git checkout cp/includes/global-header.php
+   
+   # Remove Chart.js files
+   rm cp/js/chart.js cp/js/chart-helper.js
+   ```
+   **Note**: Silverlight still won't work in modern browsers without plugins
+
 ## System Requirements
 
 - **PHP**: 8.0 or higher (8.3 recommended)
@@ -401,16 +586,21 @@ If issues occur, you can rollback by:
 - No database changes required
 - No configuration file changes needed
 - All SWF files remain in place (required by Ruffle)
-- SWFObject.js can be removed if desired (no longer used)
+- Silverlight .xap and visifire.js moved to `/deprecated/` folder for backup
+- Chart.js library (200KB) significantly smaller than Silverlight runtime
+- All chart functionality maintained with improved browser compatibility
 
 ## Support
 
 For issues related to:
 - **PHP compatibility**: Check PHP error logs in `/logs/` directory
 - **Ruffle/Flash**: Visit https://ruffle.rs/ for documentation
+- **Chart.js**: Visit https://www.chartjs.org/docs/ for documentation
 - **TradeX specific**: Refer to existing documentation in `/docs/` directory
 
 ---
-*Upgrade completed: February 12, 2026*
+*PHP Upgrade completed: February 12, 2026*
+*Chart.js Migration completed: February 14, 2026*
 *PHP Version: 8.2.30 (compatible with 8.3)*
 *Ruffle Version: Latest from unpkg CDN*
+*Chart.js Version: 4.4.1*

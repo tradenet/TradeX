@@ -1,44 +1,45 @@
-<vc:Chart xmlns:vc="clr-namespace:Visifire.Charts;assembly=SLVisifire.Charts" Width="850" Height="400" BorderThickness="0" Theme="Theme1" AnimationEnabled="False" Watermark="False" DataPointWidth="5.0">
-    <vc:Chart.Titles>
-        <vc:Title Text="Historical Productivity &amp; Return" FontWeight="Bold" />
-    </vc:Chart.Titles>
+<?php
+header('Content-Type: application/json');
 
-    <vc:Chart.ToolTips>
-        <vc:ToolTip Opacity="1.0" Background="Black" FontColor="White" FontWeight="Bold" FontSize="10.0"/>
-    </vc:Chart.ToolTips>
+$labels = [];
+$prod_data = [];
+$return_data = [];
 
-    <vc:Chart.AxesX>
-        <vc:Axis>
-            <vc:Axis.AxisLabels>
-                <vc:AxisLabels Angle="-90"/>
-            </vc:Axis.AxisLabels>
-        </vc:Axis>
-    </vc:Chart.AxesX>
+if (is_array($history->stats)) {
+    foreach ($history->stats as $date => $stats) {
+        $labels[] = $date;
+        $prod_data[] = $stats[0] > 0 ? (float)format_float_to_percent($stats[6] / $stats[0]) : 0;
+        $return_data[] = $stats[0] > 0 ? (float)format_float_to_percent($stats[14] / $stats[0]) : 0;
+    }
+}
 
-    <vc:Chart.AxesY>
-        <vc:Axis AxisType="Primary">
-            <vc:Axis.Grids>
-                <vc:ChartGrid InterlacedColor="#ececec"/>
-            </vc:Axis.Grids>
-        </vc:Axis>
-    </vc:Chart.AxesY>
+$chart_data = [
+    'title' => 'Historical Productivity & Return',
+    'labels' => $labels,
+    'datasets' => [
+        [
+            'label' => 'Productivity',
+            'data' => $prod_data,
+            'backgroundColor' => 'rgba(255, 0, 0, 0.1)',
+            'borderColor' => 'rgba(255, 0, 0, 1)',
+            'borderWidth' => 3,
+            'fill' => false,
+            'tension' => 0.1,
+            'pointRadius' => 4,
+            'pointHoverRadius' => 6
+        ],
+        [
+            'label' => 'Return',
+            'data' => $return_data,
+            'backgroundColor' => 'rgba(0, 151, 255, 0.1)',
+            'borderColor' => 'rgba(0, 151, 255, 1)',
+            'borderWidth' => 3,
+            'fill' => false,
+            'tension' => 0.1,
+            'pointRadius' => 4,
+            'pointHoverRadius' => 6
+        ]
+    ]
+];
 
-    <vc:Chart.Series>
-        <vc:DataSeries LegendText="Productivity" RenderAs="Line" LightingEnabled="False" ToolTipText="#YValue%" Color="#ff0000" MarkerScale="1.5" LineThickness="3" LabelEnabled="False">
-            <vc:DataSeries.DataPoints>
-                <?php if (is_array($history->stats)): foreach( $history->stats as $date => $stats ): ?>
-                <vc:DataPoint AxisXLabel="<?php echo $date; ?>" YValue="<?php echo $stats[0] > 0 ? format_float_to_percent($stats[6] / $stats[0]) : 0; ?>"/>
-                <?php endforeach; endif; ?>
-            </vc:DataSeries.DataPoints>
-        </vc:DataSeries>
-
-        <vc:DataSeries LegendText="Return" RenderAs="Line" LightingEnabled="False" ToolTipText="#YValue%" Color="#0097FF" MarkerScale="1.5" LineThickness="3" LabelEnabled="False">
-            <vc:DataSeries.DataPoints>
-                <?php if (is_array($history->stats)): foreach( $history->stats as $date => $stats ): ?>
-                <vc:DataPoint AxisXLabel="<?php echo $date; ?>" YValue="<?php echo $stats[0] > 0 ? format_float_to_percent($stats[14] / $stats[0]) : 0; ?>"/>
-                <?php endforeach; endif; ?>
-            </vc:DataSeries.DataPoints>
-        </vc:DataSeries>
-    </vc:Chart.Series>
-
-</vc:Chart>
+echo json_encode($chart_data);
