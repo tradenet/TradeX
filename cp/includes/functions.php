@@ -14,11 +14,11 @@
 // limitations under the License.
 
 
+// Indicate we are in the control panel (must be before global.php)
+define('IN_CONTROL_PANEL', true);
+
 require_once '../lib/global.php';
 require_once 'utility.php';
-
-// Indicate we are in the control panel
-define('IN_CONTROL_PANEL', true);
 
 // Directories
 define('DIR_CP_INCLUDES', DIR_BASE . '/cp/includes');

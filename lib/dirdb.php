@@ -38,7 +38,7 @@ class DirDB
         $record = array();
         foreach( $this->fields as $field )
         {
-            $record[] = DirDB::_format_incoming($data[$field]);
+            $record[] = DirDB::_format_incoming(isset($data[$field]) ? $data[$field] : '');
         }
 
         file_write($this->directory . '/' . $data[$this->primary_key], join('|', $record));

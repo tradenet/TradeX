@@ -438,7 +438,7 @@ function generate_outlists($stats)
                     // Handle instant force
                     if( $settings['force_instant'] > 0 )
                     {
-                        $settings['force_instant_owed'] = $updates['force_instant_owed'] = max(0, $settings['force_instant_owed'] - $ts['1m'][21]);
+                        $settings['force_instant_owed'] = $updates['force_instant_owed'] = max(0, (int)$settings['force_instant_owed'] - $ts['1m'][21]);
 
                         if( $settings['force_instant_owed'] == 0 )
                         {
@@ -469,7 +469,7 @@ function generate_outlists($stats)
                         // Deduct the amount received in the past minute
                         else if( $g_stats_minute )
                         {
-                            $settings['force_hourly_owed'] = $updates['force_hourly_owed'] = max(0, $settings['force_hourly_owed'] - $ts['1m'][22]);
+                            $settings['force_hourly_owed'] = $updates['force_hourly_owed'] = max(0, (int)$settings['force_hourly_owed'] - $ts['1m'][22]);
                         }
                     }
                 }

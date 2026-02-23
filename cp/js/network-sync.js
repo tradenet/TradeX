@@ -170,15 +170,15 @@ function syncNext(cache)
             data: 'r=_xNetworkSync&domain=' + domain + (cache ? '&cache=1&settings=' + escape(selected_settings.join(',')) + '&trades=' + escape(selected_trades.join(',')) : ''),
             success: function(data)
             {
-                switch(data[JSON.KEY_STATUS])
+                switch(data[Response.KEY_STATUS])
                 {
-                    case JSON.STATUS_SUCCESS:
+                    case Response.STATUS_SUCCESS:
                         $('#sync-complete')
                         .prepend('<div class="sync-success">' + domain + ' sync successful!</div>');
 
                         break;
 
-                    case JSON.STATUS_WARNING:
+                    case Response.STATUS_WARNING:
                         sync_errors = true;
                         $('#sync-complete')
                         .prepend('<div class="sync-failure">' + domain + ' sync failed: ' + data.response + '</div>');

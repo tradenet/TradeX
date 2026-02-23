@@ -166,13 +166,13 @@ function processUnknowns()
             data: 'r=_xNetworkStatsGet&domain=' + domain,
             success: function(data)
             {
-                switch(data[JSON.KEY_STATUS])
+                switch(data[Response.KEY_STATUS])
                 {
-                    case JSON.STATUS_SUCCESS:
+                    case Response.STATUS_SUCCESS:
                         updateStatsRow($tr, data.response);
                         break;
 
-                    case JSON.STATUS_WARNING:
+                    case Response.STATUS_WARNING:
                         $tr
                         .children('td:nth-child(3)')
                         .attr('colspan', 14)

@@ -214,7 +214,7 @@ $(function()
                 success: function(data)
                 {
                     $box
-                    .html(data[JSON.KEY_HTML])
+                    .html(data[Response.KEY_HTML])
                     .css('visibility', 'hidden')
                     .show();
 
@@ -261,8 +261,8 @@ $(function()
             data: 'r=_xGrabThumbs&trade=' + escape($(this).attr('trade')),
             success: function(data)
             {
-                $('span.trade-thumbs[trade="' + data[JSON.KEY_ITEM_ID] + '"]')
-                .html(data[JSON.KEY_HTML]);
+                $('span.trade-thumbs[trade="' + data[Response.KEY_ITEM_ID] + '"]')
+                .html(data[Response.KEY_HTML]);
 
                 fixOffPage($(icon).parents('div.trade-info'), '8px');
             },

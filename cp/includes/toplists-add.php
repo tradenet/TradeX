@@ -16,7 +16,8 @@
           'req_value' => array('')
       );
 
-      $editing = !empty($item);
+      // Check if $item is defined and not empty
+      $editing = isset($item) && !empty($item);
       if( !$editing )
       {
           require_once 'textdb.php';
@@ -32,7 +33,14 @@
       
       $item = array_merge($item_defaults, $item);
       
-      // Ensure array fields are always arrays (not strings)
+      // Ensure required keys exist and are not null
+      foreach($item_defaults as $key => $default_value) {
+          if (!isset($item[$key]) || is_null($item[$key])) {
+              $item[$key] = $default_value;
+          }
+      }
+      
+      // Ensure array fields are always arrays (not strings or null)
       if( !is_array($item['trade_sources']) )
       {
           $item['trade_sources'] = !empty($item['trade_sources']) ? array($item['trade_sources']) : array('');
@@ -203,10 +211,17 @@
               <div class="field">
                 <label class="short">Trade Priority:</label>
                 <div class="d-inline-block">
-                  <?php for( $i = 0; $i < count($item['trade_sources']); $i++ ): ?>
+                  <?php 
+                  // Ensure trade_sources is an array
+                  if (!is_array($item['trade_sources'])) $item['trade_sources'] = array('');
+                  
+                  $trade_sources_count = count($item['trade_sources']);
+                  for( $i = 0; $i < $trade_sources_count; $i++ ): 
+                    $trade_source_val = isset($item['trade_sources'][$i]) ? $item['trade_sources'][$i] : '';
+                  ?>
                   <div style="margin: 2px 0px;">
                     <select name="trade_sources[]">
-                      <?php echo form_options_hash($trade_sources, $item['trade_sources'][$i]); ?>
+                      <?php echo form_options_hash($trade_sources, $trade_source_val); ?>
                     </select>
 
                     <img src="images/add-16x16.png" border="0" width="16" height="16" class="c-click" style="margin-left: 8px;">
@@ -228,22 +243,34 @@
               <div class="field">
                 <label class="short">Requirement:</label>
                 <div class="d-inline-block">
-                <?php for( $i = 0; $i < count($item['req_field']); $i++ ): ?>
+                <?php 
+                // Ensure all requirement arrays are properly initialized
+                if (!is_array($item['req_field'])) $item['req_field'] = array('');
+                if (!is_array($item['req_operator'])) $item['req_operator'] = array('');
+                if (!is_array($item['req_value'])) $item['req_value'] = array('');
+                
+                $req_count = count($item['req_field']);
+                for( $i = 0; $i < $req_count; $i++ ): 
+                  // Get values safely
+                  $req_field_val = isset($item['req_field'][$i]) ? $item['req_field'][$i] : '';
+                  $req_operator_val = isset($item['req_operator'][$i]) ? $item['req_operator'][$i] : '';
+                  $req_value_val = isset($item['req_value'][$i]) ? $item['req_value'][$i] : '';
+                ?>
                   <div style="margin: 2px 0px;">
                     <select name="req_field[]">
                       <option value=""></option>
-                      <?php echo form_options_hash($sorters, $item['req_field'][$i]); ?>
+                      <?php echo form_options_hash($sorters, $req_field_val); ?>
                     </select>
 
                     <select name="req_operator[]">
                       <option value=""></option>
                       <?php
                       $operators = array('>', '>=', '<', '<=');
-                      echo form_options($operators, $item['req_operator'][$i]);
+                      echo form_options($operators, $req_operator_val);
                       ?>
                     </select>
 
-                    <input type="text" name="req_value[]" size="10" value="<?php echo $item['req_value'][$i]; ?>"/>
+                    <input type="text" name="req_value[]" size="10" value="<?php echo htmlspecialchars($req_value_val, ENT_QUOTES); ?>"/>
 
                     <img src="images/add-16x16.png" border="0" width="16" height="16" class="c-click" style="margin-left: 8px;">
                     <img src="images/remove-16x16.png" border="0" width="16" height="16" class="c-click" style="margin-left: 8px;">

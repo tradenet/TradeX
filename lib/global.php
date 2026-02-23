@@ -99,4 +99,16 @@ function error_handler($errno, $errstr, $errfile, $errline)
 
 require_once 'config.php';
 
+// Set Content Security Policy headers
+if (defined('IN_CONTROL_PANEL') && IN_CONTROL_PANEL) {
+    // Control panel needs unsafe-eval for tablesorter and dynamic features
+    $csp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://static.cloudflareinsights.com https://*.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://*.cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self';";
+    error_log("TradeX: Setting CP CSP with unsafe-eval");
+} else {
+    // Main site - more restrictive without unsafe-eval
+    $csp = "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://*.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://*.cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self';";
+    error_log("TradeX: Setting main CSP without unsafe-eval");
+}
+header("Content-Security-Policy: " . $csp);
+
 ?>

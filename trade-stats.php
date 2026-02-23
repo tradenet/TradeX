@@ -37,7 +37,7 @@ if( !$C['flag_allow_login'] )
 }
 
 
-$r = $_REQUEST['r'];
+$r = isset($_REQUEST['r']) ? $_REQUEST['r'] : '';
 if( isset($functions[$r]) )
 {
     call_user_func($functions[$r]);
@@ -51,6 +51,11 @@ function _xStatsLoginShow()
 {
     global $t, $C;
 
+    if( !isset($t->_variables['g_errors']) )
+    {
+        $t->Assign('g_errors', array());
+    }
+
     $t->Display('trade-stats-login.tpl');
 }
 
@@ -62,11 +67,11 @@ function _xStatsShow()
 
     $v =& Validator::Get();
 
-    $v->Register($_REQUEST['domain'], VT_NOT_EMPTY, "The 'Domain' field is required");
-    $v->Register($_REQUEST['password'], VT_NOT_EMPTY, "The 'Password' field is required");
+    $v->Register(isset($_REQUEST['domain']) ? $_REQUEST['domain'] : '', VT_NOT_EMPTY, "The 'Domain' field is required");
+    $v->Register(isset($_REQUEST['password']) ? $_REQUEST['password'] : '', VT_NOT_EMPTY, "The 'Password' field is required");
 
     $trade = null;
-    if( !string_is_empty($_REQUEST['domain']) && !string_is_empty($_REQUEST['password']) )
+    if( !string_is_empty($_REQUEST['domain'] ?? '') && !string_is_empty($_REQUEST['password'] ?? '') )
     {
         require_once 'dirdb.php';
 
@@ -99,6 +104,11 @@ function _xForgotPasswordShow()
 {
     global $t, $C;
 
+    if( !isset($t->_variables['g_errors']) )
+    {
+        $t->Assign('g_errors', array());
+    }
+
     $t->Display('trade-stats-forgot.tpl');
 }
 
@@ -110,11 +120,11 @@ function _xForgotPasswordConfirm()
 
     $v =& Validator::Get();
 
-    $v->Register($_REQUEST['domain'], VT_NOT_EMPTY, "The 'Domain' field is required");
-    $v->Register($_REQUEST['email'], VT_VALID_EMAIL, "The 'E-mail' field must be a valid e-mail address");
+    $v->Register(isset($_REQUEST['domain']) ? $_REQUEST['domain'] : '', VT_NOT_EMPTY, "The 'Domain' field is required");
+    $v->Register(isset($_REQUEST['email']) ? $_REQUEST['email'] : '', VT_VALID_EMAIL, "The 'E-mail' field must be a valid e-mail address");
 
     $trade = null;
-    if( !string_is_empty($_REQUEST['domain']) )
+    if( !string_is_empty($_REQUEST['domain'] ?? '') )
     {
         require_once 'dirdb.php';
 
@@ -125,7 +135,7 @@ function _xForgotPasswordConfirm()
 
         if( !empty($trade) )
         {
-            $v->Register($_REQUEST['email'], VT_EQUALS, "The E-mail entered does not match the e-mail address for this domain", $trade['email']);
+            $v->Register(isset($_REQUEST['email']) ? $_REQUEST['email'] : '', VT_EQUALS, "The E-mail entered does not match the e-mail address for this domain", $trade['email']);
         }
     }
 
@@ -140,7 +150,7 @@ function _xForgotPasswordConfirm()
 
     $db = new PasswordConfirmsDB();
     $db->Add(array('confirm_id' => $trade['confirm_id'],
-                   'domain' => $_REQUEST['domain'],
+                   'domain' => $_REQUEST['domain'] ?? '',
                    'timestamp' => time()));
 
     $t->AssignByRef('g_trade', $trade);
@@ -160,7 +170,7 @@ function _xForgotPasswordConfirmed()
 
     $db = new PasswordConfirmsDB();
     $db->DeleteExpired();
-    $confirm = $db->Retrieve($_REQUEST['id']);
+    $confirm = $db->Retrieve($_REQUEST['id'] ?? '');
 
     require_once 'validator.php';
     $v =& Validator::Get();
@@ -173,7 +183,7 @@ function _xForgotPasswordConfirmed()
     }
     else
     {
-        $db->Delete($_REQUEST['id']);
+        $db->Delete($_REQUEST['id'] ?? '');
 
         $password = get_random_password();
 

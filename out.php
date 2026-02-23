@@ -14,6 +14,8 @@
 // limitations under the License.
 
 
+// Start output buffering to prevent accidental output before headers
+ob_start();
 
 @ini_set('memory_limit', -1);
 @set_time_limit(0);
@@ -69,25 +71,54 @@ $_SERVER['HTTP_USER_AGENT'] = str_replace('|', '', $_SERVER['HTTP_USER_AGENT']);
 $_SERVER['HTTP_REFERER'] = str_replace('|', '', $_SERVER['HTTP_REFERER']);
 
 
+// Sanitize input variables to prevent corruption
+if( isset($_GET['t']) && !is_string($_GET['t']) )
+{
+    unset($_GET['t']);
+}
+if( isset($_GET['u']) && !is_string($_GET['u']) )
+{
+    unset($_GET['u']);
+}
+if( isset($_GET['t']) )
+{
+    // Remove any non-printable or dangerous characters from trade parameter
+    $_GET['t'] = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $_GET['t']);
+}
+if( isset($_GET['u']) )
+{
+    // Remove any non-printable characters from URL parameter
+    $_GET['u'] = preg_replace('/[\x00-\x1F\x7F]/', '', $_GET['u']);
+}
+
+
 // Session cookie is set
 if( isset($_COOKIE['tdxsess']) )
 {
-    $cookie_data = base64_decode($_COOKIE['tdxsess']);
-    $cookie_signature = sha1($C['keyphrase'] . $cookie_data);
-    $g_session = unserialize($cookie_data);
-
-    // Bad signature
-    if( !isset($_COOKIE['tdxsig']) || $_COOKIE['tdxsig'] != $cookie_signature )
+    $cookie_data = @base64_decode($_COOKIE['tdxsess']);
+    if( $cookie_data !== false )
     {
-        $g_session['t'] = 'unknown';
-        $g_session['sys'] = true;
-    }
+        $cookie_signature = sha1($C['keyphrase'] . $cookie_data);
+        $temp_session = @unserialize($cookie_data);
+        
+        if( $temp_session !== false && is_array($temp_session) )
+        {
+            $g_session = $temp_session;
+        }
 
-    // Cookie data does not match server-side stored data
-    else if( !is_file($session_file) || $cookie_data != file_get_contents($session_file) )
-    {
-        $g_session['t'] = 'unknown';
-        $g_session['sys'] = true;
+        // Bad signature
+        if( !isset($_COOKIE['tdxsig']) || $_COOKIE['tdxsig'] != $cookie_signature )
+        {
+            $g_session['t'] = 'unknown';
+            $g_session['sys'] = true;
+        }
+
+        // Cookie data does not match server-side stored data
+        else if( !is_file($session_file) || $cookie_data != file_get_contents($session_file) )
+        {
+            $g_session['t'] = 'unknown';
+            $g_session['sys'] = true;
+        }
     }
 }
 else
@@ -95,7 +126,11 @@ else
     // Existing session
     if( ($session_time = @filemtime($session_file)) !== false && $session_time >= $now - $session_length )
     {
-        $g_session = unserialize(file_get_contents($session_file));
+        $temp_session = @unserialize(@file_get_contents($session_file));
+        if( $temp_session !== false && is_array($temp_session) )
+        {
+            $g_session = $temp_session;
+        }
         $g_session['t'] = 'no-cookie';
         $g_session['sys'] = true;
     }
@@ -188,13 +223,36 @@ if( !$to_trade && !isset($_GET['u']) && !isset($_GET['t']) )
 
 
 // Sending to a specific trade
-if( isset($_GET['t']) && file_exists("data/trades/{$_GET['t']}") )
+if( isset($_GET['t']) )
 {
-    $to_trade = true;
-    $send_to_trade = basename($_GET['t']);
-    $send_to_data = explode('|', file_get_contents("data/trades/$send_to_trade"));
-    $_GET['u'] = $send_to_data[0];
-    $g_external_info = $send_to_data[37];
+    // Sanitize the trade domain - only allow valid domain characters
+    $trade_domain = preg_replace('/[^a-z0-9\.\-_]/i', '', basename($_GET['t']));
+    
+    if( !empty($trade_domain) && file_exists("data/trades/{$trade_domain}") )
+    {
+        $send_to_trade = $trade_domain;
+        $send_to_data = explode('|', file_get_contents("data/trades/$send_to_trade"));
+        
+        // Validate return URL exists and is a valid URL
+        if( isset($send_to_data[0]) && !empty($send_to_data[0]) && (preg_match('~^https?://~i', $send_to_data[0]) || filter_var($send_to_data[0], FILTER_VALIDATE_URL)) )
+        {
+            $to_trade = true;
+            $_GET['u'] = $send_to_data[0];
+            $g_external_info = isset($send_to_data[37]) ? $send_to_data[37] : false;
+        }
+        else
+        {
+            // Invalid or missing return URL, send to default
+            $to_trade = false;
+            $_GET['u'] = $C['trades_satisfied_url'];
+        }
+    }
+    else
+    {
+        // Trade file doesn't exist or invalid domain, send to default
+        $to_trade = false;
+        $_GET['u'] = $C['trades_satisfied_url'];
+    }
 }
 
 // Select trade
@@ -399,21 +457,81 @@ flock($fp, LOCK_UN);
 fclose($fp);
 
 
+// Debug logging before redirect
+@mkdir('logs', 0755, true);
+$debug_fp = @fopen('logs/debug.log', 'a');
+if( $debug_fp )
+{
+    flock($debug_fp, LOCK_EX);
+    $debug_u = isset($_GET['u']) ? $_GET['u'] : 'NOT_SET';
+    $debug_t = isset($_GET['t']) ? $_GET['t'] : 'NOT_SET';
+    $to_trade_str = isset($to_trade) ? ($to_trade ? 'YES' : 'NO') : 'NOT_SET';
+    $send_to = isset($send_to_trade) ? $send_to_trade : 'NOT_SET';
+    fwrite($debug_fp, date('Y-m-d H:i:s') . "|t={$debug_t}|send_to={$send_to}|to_trade={$to_trade_str}|u_before={$debug_u}|");
+    flock($debug_fp, LOCK_UN);
+}
+
 // Send to URL
-$_GET['u'] = preg_match('~^http://~i', $_GET['u']) ? $_GET['u'] : base64_decode($_GET['u']);
+if( !isset($_GET['u']) || empty($_GET['u']) || !is_string($_GET['u']) )
+{
+    $_GET['u'] = $C['trades_satisfied_url'];
+}
+
+// Ensure we have a string
+$_GET['u'] = (string)$_GET['u'];
+$_GET['u'] = trim($_GET['u']);
+
+// Convert http to https
+$_GET['u'] = str_replace('http://', 'https://', $_GET['u']);
+
+// Only decode if it doesn't look like a URL
+if( !preg_match('~^https?://~i', $_GET['u']) )
+{
+    $decoded = @base64_decode($_GET['u'], true);
+    if( $decoded !== false && is_string($decoded) && preg_match('~^https?://~i', $decoded) )
+    {
+        $_GET['u'] = $decoded;
+    }
+    else
+    {
+        // Invalid URL data, use default
+        $_GET['u'] = str_replace('http://', 'https://', $C['trades_satisfied_url']);
+    }
+}
+
+// Final validation - ensure we have a valid URL (simplified regex)
+if( !is_string($_GET['u']) || !preg_match('~^https?://~i', $_GET['u']) )
+{
+    $_GET['u'] = str_replace('http://', 'https://', $C['trades_satisfied_url']);
+}
 
 if( $g_external_info )
 {
     $_GET['u'] .= (strpos($_GET['u'], '?') === false ? '?' : '&') . 'x=' . join('.', $g_session['ei']);
 }
 
-header("Location: {$_GET['u']}", true, 301);
+// Final log before redirect
+if( $debug_fp )
+{
+    flock($debug_fp, LOCK_EX);
+    fwrite($debug_fp, "u_after={$_GET['u']}|{$_SERVER['REMOTE_ADDR']}\n");
+    flock($debug_fp, LOCK_UN);
+    fclose($debug_fp);
+}
 
-// Debug logging
-//$fp = fopen('logs/debug.log', 'a');
-//flock($fp, LOCK_EX);
-//fwrite($fp, "OUT|$now|{$_SERVER['REMOTE_ADDR']}|{$_SERVER['HTTP_REFERER']}|{$_SERVER['REQUEST_URI']}|{$_COOKIE['tdxsess']}|$serialized|$to_trade|{$_GET['u']}\n");
-//flock($fp, LOCK_UN);
+// Ensure URL is properly encoded and safe
+$redirect_url = $_GET['u'];
+
+// Validate final URL one more time
+if( !preg_match('~^https?://~i', $redirect_url) )
+{
+    $redirect_url = str_replace('http://', 'https://', $C['trades_satisfied_url']);
+}
+
+// Clear any output buffer and send clean redirect
+@ob_end_clean();
+header("Location: " . $redirect_url, true, 301);
+exit();
 //fclose($fp);
 
 
@@ -497,14 +615,14 @@ function select_trade($trade)
 
     if( !empty($send_to_trade[0]) )
     {
-        $g_external_info = $send_to_trade[7];
-        $_GET['u'] = $send_to_trade[4];
+        $g_external_info = isset($send_to_trade[7]) ? $send_to_trade[7] : false;
+        $_GET['u'] = isset($send_to_trade[4]) ? $send_to_trade[4] : '';
 
-        if( $outlist_file == 'outlist_main' && $send_to_trade[5] )
+        if( $outlist_file == 'outlist_main' && isset($send_to_trade[5]) && $send_to_trade[5] )
         {
             $g_force_type = 'I';
         }
-        else if( $outlist_file == 'outlist_forces' )
+        else if( $outlist_file == 'outlist_forces' && isset($send_to_trade[6]) )
         {
             $g_force_type = $send_to_trade[6];
         }

@@ -79,8 +79,8 @@ $session = array(
 
 
 // Cleanup variables
-$_SERVER['HTTP_USER_AGENT'] = str_replace('|', '', $_SERVER['HTTP_USER_AGENT']);
-$_SERVER['HTTP_REFERER'] = str_replace('|', '', $_SERVER['HTTP_REFERER']);
+$_SERVER['HTTP_USER_AGENT'] = str_replace('|', '', $_SERVER['HTTP_USER_AGENT'] ?? '');
+$_SERVER['HTTP_REFERER'] = str_replace('|', '', $_SERVER['HTTP_REFERER'] ?? '');
 
 
 // Examine cookie
@@ -355,6 +355,11 @@ function geoip_country($ip_address)
     $standard_record_length = 3;
 
     $fp = fopen('assets/geoip.dat', 'rb');
+    if( !$fp )
+    {
+        return array('code' => '', 'name' => '', 'quality' => 0);
+    }
+    
     $long_ip = ip2long($ip_address);
     $offset = 0;
     $country_id = null;
@@ -364,6 +369,11 @@ function geoip_country($ip_address)
     {
         fseek($fp, 2 * $standard_record_length * $offset, SEEK_SET);
         $buf = fread($fp, 2 * $standard_record_length);
+
+        if( strlen($buf) < 2 * $standard_record_length )
+        {
+            break;
+        }
 
         $x = array(0,0);
 
