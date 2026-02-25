@@ -456,6 +456,157 @@ function _xSavedLinksGenerateToplist()
     JSON::Success(array('toplist_url' => $toplist_url));
 }
 
+// ---------------------------------------------------------------------------
+// Saved Link Toplists (static generation)
+// ---------------------------------------------------------------------------
+
+function _xSavedLinkToplistsShow()
+{
+    JSON::Success(array(JSON_KEY_DIALOG => _xIncludeCapture('saved-links-toplists.php')));
+}
+
+function _xSavedLinkToplistsAddShow()
+{
+    JSON::Success(array(JSON_KEY_DIALOG => _xIncludeCapture('saved-links-toplist-add.php')));
+}
+
+function _xSavedLinkToplistsAdd()
+{
+    
+
+    $v = Validator::Get();
+    $v->Register($_REQUEST['outfile'], VT_NOT_EMPTY, 'The Output File field is required');
+    $v->Register(is_dir($_REQUEST['outfile']), VT_IS_FALSE, 'The Output File cannot point to a directory');
+
+    if( !$v->Validate() )
+    {
+        return JSON::Warning(array(JSON_KEY_MESSAGE   => 'Toplist could not be added; please fix the following items',
+                                   JSON_KEY_WARNINGS  => $v->GetErrors()));
+    }
+
+    // Flatten link_ids_multi array to comma-separated string
+    if( isset($_REQUEST['link_ids_multi']) && is_array($_REQUEST['link_ids_multi']) )
+    {
+        $_REQUEST['link_ids'] = join(',', array_map('trim', $_REQUEST['link_ids_multi']));
+    }
+    else
+    {
+        $_REQUEST['link_ids'] = '';
+    }
+
+    require_once 'textdb.php';
+    $db = new ToplistsSavedLinksDB();
+    $_REQUEST['toplist_id'] = $db->Add($_REQUEST);
+
+    JSON::Success(array(JSON_KEY_MESSAGE    => 'Saved link toplist has been added',
+                        JSON_KEY_ROW        => _xIncludeCapture('saved-links-toplist-tr.php', $_REQUEST),
+                        JSON_KEY_ITEM_TYPE  => 'saved-link-toplists',
+                        JSON_KEY_DIALOG     => _xIncludeCapture('saved-links-toplist-add.php')));
+}
+
+function _xSavedLinkToplistsEditShow()
+{
+    require_once 'textdb.php';
+    $db = new ToplistsSavedLinksDB();
+    $item = $db->Retrieve($_REQUEST['toplist_id']);
+
+    if( $item === null )
+    {
+        return JSON::Error('Saved link toplist not found');
+    }
+
+    JSON::Success(array(JSON_KEY_DIALOG => _xIncludeCapture('saved-links-toplist-add.php', $item)));
+}
+
+function _xSavedLinkToplistsEdit()
+{
+    
+
+    $v = Validator::Get();
+    $v->Register($_REQUEST['outfile'], VT_NOT_EMPTY, 'The Output File field is required');
+    $v->Register(is_dir($_REQUEST['outfile']), VT_IS_FALSE, 'The Output File cannot point to a directory');
+
+    if( !$v->Validate() )
+    {
+        return JSON::Warning(array(JSON_KEY_MESSAGE   => 'Toplist could not be updated; please fix the following items',
+                                   JSON_KEY_WARNINGS  => $v->GetErrors()));
+    }
+
+    if( isset($_REQUEST['link_ids_multi']) && is_array($_REQUEST['link_ids_multi']) )
+    {
+        $_REQUEST['link_ids'] = join(',', array_map('trim', $_REQUEST['link_ids_multi']));
+    }
+    else
+    {
+        $_REQUEST['link_ids'] = '';
+    }
+
+    require_once 'textdb.php';
+    $db = new ToplistsSavedLinksDB();
+    $db->Update($_REQUEST['toplist_id'], $_REQUEST);
+
+    JSON::Success(array(JSON_KEY_MESSAGE    => 'Saved link toplist has been updated',
+                        JSON_KEY_ROW        => _xIncludeCapture('saved-links-toplist-tr.php', $_REQUEST),
+                        JSON_KEY_ITEM_ID    => $_REQUEST['toplist_id'],
+                        JSON_KEY_ITEM_TYPE  => 'saved-link-toplists',
+                        JSON_KEY_DIALOG     => _xIncludeCapture('saved-links-toplist-add.php', $_REQUEST)));
+}
+
+function _xSavedLinkToplistsDelete()
+{
+    
+
+    require_once 'textdb.php';
+    $db = new ToplistsSavedLinksDB();
+    $db->Delete($_REQUEST['toplist_id']);
+
+    JSON::Success(array(JSON_KEY_MESSAGE    => 'Saved link toplist has been deleted',
+                        JSON_KEY_ITEM_TYPE  => 'saved-link-toplists',
+                        JSON_KEY_ITEM_ID    => $_REQUEST['toplist_id']));
+}
+
+function _xSavedLinkToplistsDeleteBulk()
+{
+    
+
+    require_once 'textdb.php';
+    $db = new ToplistsSavedLinksDB();
+
+    foreach( explode(',', $_REQUEST['toplist_id']) as $id )
+    {
+        $db->Delete(trim($id));
+    }
+
+    JSON::Success(array(JSON_KEY_MESSAGE => 'Selected saved link toplists have been deleted'));
+}
+
+function _xSavedLinkToplistsBuild()
+{
+    
+
+    require_once 'textdb.php';
+    $db = new ToplistsSavedLinksDB();
+
+    foreach( explode(',', $_REQUEST['toplist_id']) as $id )
+    {
+        $config = $db->Retrieve(trim($id));
+        build_saved_links_toplist($config);
+    }
+
+    JSON::Success(array(JSON_KEY_MESSAGE => 'Selected saved link toplists have been built<br />If a toplist was not generated, check the logs/error.log file for details'));
+}
+
+function _xSavedLinkToplistsBuildAll()
+{
+    
+
+    build_all_saved_links_toplists();
+
+    JSON::Success(array(JSON_KEY_MESSAGE => 'All saved link toplists have been built<br />If a toplist was not generated, check the logs/error.log file for details'));
+}
+
+// ---------------------------------------------------------------------------
+
 function _xNetworkSync()
 {
     
