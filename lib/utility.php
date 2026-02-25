@@ -45,6 +45,7 @@ define('FILE_COUNTRIES', DIR_DATA . '/countries');
 define('FILE_GROUPS', DIR_DATA . '/groups');
 define('FILE_CATEGORIES', DIR_DATA . '/categories');
 define('FILE_TOPLISTS', DIR_DATA . '/toplists');
+define('FILE_TOPLIST_SAVED_LINKS', DIR_DATA . '/toplist_saved_links/index');
 define('FILE_CAPTCHAS', DIR_DATA . '/captchas');
 define('FILE_OUTLIST_MAIN', DIR_DATA . '/outlist_main');
 define('FILE_OUTLIST_PRIMARY', DIR_DATA . '/outlist_primary');
@@ -1624,7 +1625,176 @@ function log_toplist_error($message)
 }
 
 
-function get_dns($domain)
+function build_saved_links_toplist($config)
+{
+    global $C;
+
+    require_once 'dirdb.php';
+    require_once 'compiler.php';
+    require_once 'template.php';
+    require_once 'textdb.php';
+
+    if( empty($config) )
+    {
+        return;
+    }
+
+    // Validate output file / directory is writable
+    if( !file_exists($config['outfile']) )
+    {
+        $directory = dirname($config['outfile']);
+        if( !is_dir($directory) || !is_writable($directory) )
+        {
+            return log_toplist_error("Saved-links toplist '{$config['toplist_id']}': output directory '$directory' does not exist or is not writable");
+        }
+    }
+    else if( !is_writable($config['outfile']) )
+    {
+        return log_toplist_error("Saved-links toplist '{$config['toplist_id']}': output file '{$config['outfile']}' is not writable");
+    }
+
+    // Load saved links
+    $links_db = new SavedLinksDB();
+
+    if( $config['source_type'] == 'specific_links' && !empty($config['link_ids']) )
+    {
+        $link_ids = explode(',', $config['link_ids']);
+        $raw_links = array();
+        foreach( $link_ids as $lid )
+        {
+            $lid = trim($lid);
+            if( empty($lid) ) continue;
+            $link = $links_db->Retrieve($lid);
+            if( $link !== null )
+            {
+                $raw_links[] = $link;
+            }
+        }
+    }
+    else
+    {
+        $raw_links = $links_db->RetrieveAll($config['sort_by']);
+    }
+
+    // Sort when loading all links
+    if( $config['source_type'] != 'specific_links' )
+    {
+        $sort_by = $config['sort_by'];
+        if( $sort_by == 'link_name' || $sort_by == 'link_id' )
+        {
+            usort($raw_links, function($a, $b) use ($sort_by) {
+                return strnatcasecmp($a[$sort_by], $b[$sort_by]);
+            });
+        }
+    }
+
+    // Build out_url for each link and expand by custom thumbnails
+    $max = (int) $config['max_thumbnails'];
+    if( $max <= 0 ) $max = 36;
+
+    $expanded_links = array();
+
+    foreach( $raw_links as $link_data )
+    {
+        $params = array();
+        $params[] = 'l=' . urlencode($link_data['link_id']);
+
+        switch( $link_data['type'] )
+        {
+            case 'trade':
+                if( !empty($link_data['trade']) )
+                {
+                    $params[] = 't=' . urlencode($link_data['trade']);
+                }
+                break;
+
+            case 'scheme':
+                if( !empty($link_data['skim_scheme']) )  $params[] = 'ss=' . urlencode($link_data['skim_scheme']);
+                if( !empty($link_data['content_url']) )  $params[] = 'u=' . ($link_data['encoding'] == 'urlencode' ? urlencode($link_data['content_url']) : base64_encode($link_data['content_url']));
+                if( !empty($link_data['category']) )     $params[] = 'c=' . urlencode($link_data['category']);
+                if( !empty($link_data['group']) )        $params[] = 'g=' . urlencode($link_data['group']);
+                break;
+
+            case 'percent':
+                if( !empty($link_data['percent']) )      $params[] = 's=' . $link_data['percent'];
+                if( $link_data['flag_fc'] == '1' )       $params[] = 'fc=1';
+                if( !empty($link_data['content_url']) )  $params[] = 'u=' . ($link_data['encoding'] == 'urlencode' ? urlencode($link_data['content_url']) : base64_encode($link_data['content_url']));
+                if( !empty($link_data['category']) )     $params[] = 'c=' . urlencode($link_data['category']);
+                if( !empty($link_data['group']) )        $params[] = 'g=' . urlencode($link_data['group']);
+                break;
+        }
+
+        $link_data['out_url'] = $C['base_url'] . '/out.php?' . join('&', $params);
+
+        if( !empty($link_data['custom_thumbs']) )
+        {
+            $thumbs = explode("\n", trim($link_data['custom_thumbs']));
+            foreach( $thumbs as $thumb )
+            {
+                $thumb = trim($thumb);
+                if( empty($thumb) ) continue;
+                $entry = $link_data;
+                $entry['thumb_url'] = $thumb;
+                $expanded_links[] = $entry;
+                if( count($expanded_links) >= $max ) break 2;
+            }
+        }
+        else
+        {
+            $link_data['thumb_url'] = '';
+            $expanded_links[] = $link_data;
+            if( count($expanded_links) >= $max ) break;
+        }
+    }
+
+    // Compile template
+    global $compiler;
+    if( !isset($compiler) )
+    {
+        $compiler = new Compiler();
+    }
+
+    $compiled = $compiler->CompileFile($config['template']);
+    if( $compiled === false )
+    {
+        return log_toplist_error("Saved-links toplist '{$config['toplist_id']}': template '{$config['template']}' contains errors or was not found");
+    }
+
+    // Render
+    $g_time = time();
+    $t = new Template();
+    $t->AssignByRef('g_links', $expanded_links);
+    $t->AssignByRef('g_config', $C);
+    $t->Assign('g_timestamp', $g_time);
+    $t->Assign('g_date', date($C['date_format'], $g_time));
+    $t->Assign('g_datetime', date($C['date_format'] . ' ' . $C['time_format'], $g_time));
+
+    $output = $t->Parse($compiled);
+
+    // Write static file
+    file_write($config['outfile'], $output);
+
+    // Update last_build timestamp
+    $db = new ToplistsSavedLinksDB();
+    $db->Update($config['toplist_id'], array('last_build' => $g_time));
+}
+
+
+function build_all_saved_links_toplists()
+{
+    require_once 'textdb.php';
+
+    $db = new ToplistsSavedLinksDB();
+    $toplists = $db->RetrieveAll();
+
+    foreach( $toplists as $toplist )
+    {
+        build_saved_links_toplist($toplist);
+    }
+}
+
+
+
 {
     // TODO: Only execute if dig and shell_exec are available
     return;

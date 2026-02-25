@@ -33,6 +33,10 @@ switch($GLOBALS['argv'][1])
         build_all_toplists();
         break;
 
+    case '--build-saved-link-toplists':
+        build_all_saved_links_toplists_cron();
+        break;
+
     default:
         CronAppendLog(FILE_LOG_CRON, 'Invalid command line argument: ' . $GLOBALS['argv'][1]);
         break;
@@ -93,6 +97,36 @@ function CronAppendLog($file, $message, $time = false)
     }
 
     file_append($file, "$message\n");
+}
+
+function build_all_saved_links_toplists_cron()
+{
+    require_once 'textdb.php';
+
+    $db = new ToplistsSavedLinksDB();
+    $toplists = $db->RetrieveAll();
+
+    $built = 0;
+
+    foreach( $toplists as $toplist )
+    {
+        // Skip if no auto-rebuild interval configured
+        if( empty($toplist['rebuild_interval']) || (int) $toplist['rebuild_interval'] <= 0 )
+        {
+            continue;
+        }
+
+        $minutes_since_build = empty($toplist['last_build']) ? PHP_INT_MAX : (time() - (int) $toplist['last_build']) / 60;
+
+        if( $minutes_since_build >= (int) $toplist['rebuild_interval'] )
+        {
+            CronAppendLog(FILE_LOG_CRON, 'Building saved link toplist ID ' . $toplist['toplist_id'] . ' -> ' . $toplist['outfile']);
+            build_saved_links_toplist($toplist);
+            $built++;
+        }
+    }
+
+    CronAppendLog(FILE_LOG_CRON, "Built $built saved link toplist(s)");
 }
 
 function ParseCommandLine()

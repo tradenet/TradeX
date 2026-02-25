@@ -87,6 +87,11 @@ function _xSavedLinksShow()
     include 'saved-links.php';
 }
 
+function _xSavedLinkToplistsShow()
+{
+    include 'saved-links-toplists.php';
+}
+
 function _xGraphDataHistoryStats()
 {
     require_once 'stats.php';

@@ -614,4 +614,40 @@ class SkimSchemesDynamicDB extends TextDB
     }
 }
 
+class ToplistsSavedLinksDB extends TextDB
+{
+
+    function __construct()
+    {
+        $this->db_file = FILE_TOPLIST_SAVED_LINKS;
+        $this->primary_key = 'toplist_id';
+        $this->sorter = 'toplist_id';
+        $this->auto_increment = true;
+        $this->fields = array('toplist_id',
+                              'source_type',
+                              'link_ids',
+                              'template',
+                              'outfile',
+                              'sort_by',
+                              'max_thumbnails',
+                              'rebuild_interval',
+                              'last_build');
+    }
+
+    function Defaults()
+    {
+        $defaults = parent::_defaults();
+
+        $defaults['source_type']     = 'all_links';
+        $defaults['template']        = 'toplist-saved-links-36.tpl';
+        $defaults['outfile']         = $_SERVER['DOCUMENT_ROOT'];
+        $defaults['sort_by']         = 'link_name';
+        $defaults['max_thumbnails']  = 36;
+        $defaults['rebuild_interval'] = '';
+        $defaults['last_build']      = 0;
+
+        return $defaults;
+    }
+}
+
 ?>
