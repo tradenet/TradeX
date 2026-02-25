@@ -405,15 +405,18 @@ function _xSavedLinkEdit()
 {
     require_once 'dirdb.php';
     $db = new SavedLinksDB();
-    
+
     $link_data = array(
-        'link_name' => $_REQUEST['link_name'],
+        'link_name'    => $_REQUEST['link_name'],
         'custom_thumbs' => isset($_REQUEST['custom_thumbs']) ? trim($_REQUEST['custom_thumbs']) : ''
     );
-    
-    $db->Update($_REQUEST['link_id'], $link_data);
-    
-    JSON::Success(array(JSON_KEY_MESSAGE => 'Saved link updated successfully'));
+
+    $updated = $db->Update($_REQUEST['link_id'], $link_data);
+
+    JSON::Success(array(JSON_KEY_MESSAGE   => 'Saved link updated successfully',
+                        JSON_KEY_ROW       => _xIncludeCapture('saved-links-tr.php', $updated),
+                        JSON_KEY_ITEM_ID   => $_REQUEST['link_id'],
+                        JSON_KEY_ITEM_TYPE => 'saved-links'));
 }
 
 function _xSavedLinkDelete()
@@ -421,8 +424,23 @@ function _xSavedLinkDelete()
     require_once 'dirdb.php';
     $db = new SavedLinksDB();
     $db->Delete($_REQUEST['id']);
-    
-    JSON::Success(array(JSON_KEY_MESSAGE => 'Saved link deleted successfully'));
+
+    JSON::Success(array(JSON_KEY_MESSAGE  => 'Saved link deleted successfully',
+                        JSON_KEY_ITEM_TYPE => 'saved-links',
+                        JSON_KEY_ITEM_ID   => $_REQUEST['id']));
+}
+
+function _xSavedLinksDeleteBulk()
+{
+    require_once 'dirdb.php';
+    $db = new SavedLinksDB();
+
+    foreach( explode(',', $_REQUEST['ids']) as $id )
+    {
+        $db->Delete(trim($id));
+    }
+
+    JSON::Success(array(JSON_KEY_MESSAGE => 'Selected saved links deleted successfully'));
 }
 
 function _xSavedLinkCopyUrl()
@@ -442,18 +460,17 @@ function _xSavedLinkCopyUrl()
 function _xSavedLinksGenerateToplist()
 {
     global $C;
-    
-    if (!isset($_REQUEST['link_ids']) || !is_array($_REQUEST['link_ids']) || empty($_REQUEST['link_ids'])) {
-        JSON::Error('No links selected');
-        return;
+
+    if( !isset($_REQUEST['link_ids']) || !is_array($_REQUEST['link_ids']) || empty($_REQUEST['link_ids']) )
+    {
+        return JSON::Error('No links selected');
     }
-    
-    $link_ids = array_map('trim', $_REQUEST['link_ids']);
-    $link_ids = array_filter($link_ids);
-    
+
+    $link_ids = array_filter(array_map('trim', $_REQUEST['link_ids']));
+
     $toplist_url = $C['base_url'] . '/savedlinks.php?links=' . urlencode(join(',', $link_ids));
-    
-    JSON::Success(array('toplist_url' => $toplist_url));
+
+    JSON::Success(array(JSON_KEY_MESSAGE => 'Toplist URL: ' . $toplist_url));
 }
 
 // ---------------------------------------------------------------------------
