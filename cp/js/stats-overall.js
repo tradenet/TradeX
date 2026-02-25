@@ -213,10 +213,9 @@ $(function()
                 data: 'r=_xTradesInfoBox&trade=' + $box.attr('trade'),
                 success: function(data)
                 {
-                    $box
-                    .html(data[Response.KEY_HTML])
-                    .css('visibility', 'hidden')
-                    .show();
+                    $box.html(data[AjaxResponse.KEY_HTML]);
+                    $box.css('visibility', 'hidden');
+                    $box.show();
 
                     setTimeout(function()
                     {
@@ -261,8 +260,8 @@ $(function()
             data: 'r=_xGrabThumbs&trade=' + escape($(this).attr('trade')),
             success: function(data)
             {
-                $('span.trade-thumbs[trade="' + data[Response.KEY_ITEM_ID] + '"]')
-                .html(data[Response.KEY_HTML]);
+                $('span.trade-thumbs[trade="' + data[AjaxResponse.KEY_ITEM_ID] + '"]')
+                .html(data[AjaxResponse.KEY_HTML]);
 
                 fixOffPage($(icon).parents('div.trade-info'), '8px');
             },

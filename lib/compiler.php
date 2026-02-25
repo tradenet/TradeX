@@ -374,9 +374,13 @@ class Compiler
         {
             $attributes['value'] = $this->ParseVarsInString(substr($attributes['value'], 1));
         }
-        else
+        else if( isset($attributes['code']) )
         {
             $attributes['value'] = $this->ParseVars($attributes['code']);
+        }
+        else
+        {
+            $attributes['value'] = "''";
         }
 
         return COMPILER_PHP_START . $attributes['var'] . ' = ' . $attributes['value'] .  ';' . COMPILER_PHP_END;

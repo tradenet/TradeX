@@ -41,7 +41,8 @@ class DirDB
             $record[] = DirDB::_format_incoming(isset($data[$field]) ? $data[$field] : '');
         }
 
-        file_write($this->directory . '/' . $data[$this->primary_key], join('|', $record));
+        $primary_key_value = isset($data[$this->primary_key]) ? $data[$this->primary_key] : '';
+        file_write($this->directory . '/' . $primary_key_value, join('|', $record));
     }
 
     function ChangePrimaryKey($old, $new)
@@ -297,6 +298,27 @@ class SystemDB extends DirDB
                               'excludes',
                               'send_method',
                               'traffic_url');
+    }
+}
+
+class SavedLinksDB extends DirDB
+{
+    function __construct()
+    {
+        $this->directory = DIR_SAVED_LINKS;
+        $this->primary_key = 'link_id';
+        $this->sorter = 'link_name';
+        $this->fields = array('link_name',
+                              'type',
+                              'custom_thumbs',
+                              'percent',
+                              'flag_fc',
+                              'skim_scheme',
+                              'content_url',
+                              'encoding',
+                              'category',
+                              'group',
+                              'trade');
     }
 }
 ?>

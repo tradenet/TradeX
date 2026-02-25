@@ -11,6 +11,6 @@
     <script type="text/javascript" src="js/cp.js?v=<?php echo time(); ?>"></script>
     <script type="text/javascript" src="js/chart.js?v=<?php echo time(); ?>"></script>
     <script type="text/javascript" src="js/chart-helper.js?v=<?php echo time(); ?>"></script>
-    <script src="js/ruffle.js"></script>
+    <script src="js/ruffle.js?v=<?php echo time(); ?>"></script>
   </head>
   <body>

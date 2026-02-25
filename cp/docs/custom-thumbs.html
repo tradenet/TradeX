@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <title>Custom Thumbnail Toplist Generator</title>
+  </head>
+  <body>
+
+    <div class="header-main">Custom Thumbnail Toplist Generator</div>
+
+    <div class="section">
+
+    <span class="header-section">Overview</span>
+
+    <p>
+      The Custom Thumbnail Toplist Generator allows you to create toplists with custom thumbnail images for each trade.
+      This is useful when you want to display specific promotional images instead of the standard thumbnail rotation.
+    </p>
+
+    </div>
+
+    <div class="section">
+
+    <span class="header-section">How to Use</span>
+
+    <ol>
+      <li><strong>Access the Tool:</strong> Go to Tools &gt; Custom Thumb Toplist Generator</li>
+      
+      <li><strong>Filter Trades (Optional):</strong> Use the Group and Category filters to narrow down the trade list</li>
+      
+      <li><strong>Select Trades:</strong> Choose one or more trades from the list and click "Add Selected Trades →"</li>
+      
+      <li><strong>Add Custom Thumbnails:</strong> For each trade, enter custom thumbnail URLs (one per line):
+        <ul>
+          <li>URLs must be complete (start with http:// or https://)</li>
+          <li>Each line represents one thumbnail image</li>
+          <li>You can add multiple thumbnails per trade</li>
+        </ul>
+      </li>
+      
+      <li><strong>Save:</strong> Click "Save Custom Thumbnails" to save the URLs to your trades</li>
+      
+      <li><strong>Create Toplist:</strong> Go to <strong>Toplists</strong> and create a new toplist:
+        <ul>
+          <li>Set Source to "Template"</li>
+          <li>Use the template: <code>toplist-random-36-custom-thumbs.tpl</code></li>
+          <li>Or create your own template based on this one</li>
+        </ul>
+      </li>
+      
+      <li><strong>Build & Deploy:</strong> Build the toplist and it will use your custom thumbnails</li>
+    </ol>
+
+    </div>
+
+    <div class="section">
+
+    <span class="header-section">Example Custom Thumbnails</span>
+
+    <p>
+      For a trade, you might enter:
+    </p>
+
+    <pre>https://example.com/promo/banner1.jpg
+https://example.com/promo/banner2.jpg
+https://example.com/promo/banner3.jpg</pre>
+
+    <p>
+      The toplist will randomly display one of these three images for that trade.
+    </p>
+
+    </div>
+
+    <div class="section">
+
+    <span class="header-section">How It Works</span>
+
+    <p>
+      When you save custom thumbnails:
+    </p>
+
+    <ul>
+      <li>The URLs are stored in the trade's <code>custom_thumbs</code> field</li>
+      <li>The toplist template retrieves these URLs when building</li>
+      <li>Each trade displays one of its custom thumbnails randomly</li>
+      <li>If a trade has no custom thumbnails, it shows a default "No Thumb" image</li>
+    </ul>
+
+    </div>
+
+    <div class="section">
+
+    <span class="header-section">Tips</span>
+
+    <ul>
+      <li><strong>Image Dimensions:</strong> Keep all thumbnails the same size for a consistent appearance</li>
+      <li><strong>File Hosting:</strong> Ensure thumbnail images are hosted on a reliable server</li>
+      <li><strong>HTTPS:</strong> Use HTTPS URLs to avoid mixed content warnings</li>
+      <li><strong>Testing:</strong> Build a test toplist before deploying to your live site</li>
+      <li><strong>Updating:</strong> You can edit custom thumbnails anytime and rebuild the toplist</li>
+    </ul>
+
+    </div>
+
+    <div class="section">
+
+    <span class="header-section">Custom Template</span>
+
+    <p>
+      The included template (<code>toplist-random-36-custom-thumbs.tpl</code>) displays up to 36 thumbnails
+      in a 6-column grid. You can create custom templates based on this one to:
+    </p>
+
+    <ul>
+      <li>Change the layout (different grid sizes, carousel, etc.)</li>
+      <li>Add additional styling or effects</li>
+      <li>Include additional trade information</li>
+      <li>Adjust the fallback behavior when no custom thumbs exist</li>
+    </ul>
+
+    <p>
+      See the <a href="toplist-manage.html">Toplist Management</a> documentation for more information
+      about creating custom toplist templates.
+    </p>
+
+    </div>
+
+  </body>
+</html>

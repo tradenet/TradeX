@@ -1,5 +1,5 @@
 // Globals
-var Response = {STATUS_SUCCESS: 0,
+var AjaxResponse = {STATUS_SUCCESS: 0,
             STATUS_WARNING: 1,
             STATUS_ERROR: 2,
             STATUS_LOGOUT: 3,
@@ -201,58 +201,58 @@ function globalAjaxSuccess(e, xhr, settings, data)
     
     if( settings.dataType == 'json' )
     {
-        if( data[Response.KEY_DIALOG] )
+        if( data[AjaxResponse.KEY_DIALOG] )
         {
-            $.dialog.show(data[Response.KEY_DIALOG]);
+            $.dialog.show(data[AjaxResponse.KEY_DIALOG]);
         }
 
-        if( data[Response.KEY_DIALOG_CLOSE] )
+        if( data[AjaxResponse.KEY_DIALOG_CLOSE] )
         {
             $.dialog.hide();
         }
 
-        if( data[Response.KEY_JS] )
+        if( data[AjaxResponse.KEY_JS] )
         {
-            $('head').append('<script language="JavaScipt" type="text/javascript">' + data[Response.KEY_JS] + '<'+'/script>');
+            $('head').append('<script language="JavaScipt" type="text/javascript">' + data[AjaxResponse.KEY_JS] + '<'+'/script>');
         }
 
-        if( data[Response.KEY_EVAL] )
+        if( data[AjaxResponse.KEY_EVAL] )
         {
-            eval(data[Response.KEY_EVAL]);
+            eval(data[AjaxResponse.KEY_EVAL]);
         }
 
-        switch(data[Response.KEY_STATUS])
+        switch(data[AjaxResponse.KEY_STATUS])
         {
-            case Response.STATUS_SUCCESS:
+            case AjaxResponse.STATUS_SUCCESS:
                 dialogButtonEnable();
 
-                if( data[Response.KEY_MESSAGE] )
+                if( data[AjaxResponse.KEY_MESSAGE] )
                 {
-                    $.growl(data[Response.KEY_MESSAGE]);
+                    $.growl(data[AjaxResponse.KEY_MESSAGE]);
                 }
 
-                if( data[Response.KEY_ITEM_TYPE] && data[Response.KEY_ITEM_TYPE] == item_type )
+                if( data[AjaxResponse.KEY_ITEM_TYPE] && data[AjaxResponse.KEY_ITEM_TYPE] == item_type )
                 {
-                    if( data[Response.KEY_ITEM_ID] )
+                    if( data[AjaxResponse.KEY_ITEM_ID] )
                     {
-                        if( data[Response.KEY_ROW] )
+                        if( data[AjaxResponse.KEY_ROW] )
                         {
-                            $('table.item-table tbody tr[id="item-'+data[Response.KEY_ITEM_ID]+'"]')
-                            .replaceWith(data[Response.KEY_ROW]);
+                            $('table.item-table tbody tr[id="item-'+data[AjaxResponse.KEY_ITEM_ID]+'"]')
+                            .replaceWith(data[AjaxResponse.KEY_ROW]);
                         }
                         else
                         {
-                            $('table.item-table tbody tr[id="item-'+data[Response.KEY_ITEM_ID]+'"]')
+                            $('table.item-table tbody tr[id="item-'+data[AjaxResponse.KEY_ITEM_ID]+'"]')
                             .remove();
 
                             $('#num-items')
                             .decrementText();
                         }
                     }
-                    else if( data[Response.KEY_ROW] )
+                    else if( data[AjaxResponse.KEY_ROW] )
                     {
                         $('table.item-table tbody')
-                        .append(data[Response.KEY_ROW]);
+                        .append(data[AjaxResponse.KEY_ROW]);
 
                         $('#num-items')
                         .incrementText();
@@ -261,20 +261,20 @@ function globalAjaxSuccess(e, xhr, settings, data)
 
                 break;
 
-            case Response.STATUS_WARNING:
-                if( data[Response.KEY_MESSAGE] )
+            case AjaxResponse.STATUS_WARNING:
+                if( data[AjaxResponse.KEY_MESSAGE] )
                 {
-                    $.growl.warning(data[Response.KEY_MESSAGE], data[Response.KEY_WARNINGS]);
+                    $.growl.warning(data[AjaxResponse.KEY_MESSAGE], data[AjaxResponse.KEY_WARNINGS]);
                 }
                 dialogButtonEnable();
                 break;
 
-            case Response.STATUS_ERROR:
-                $.growl.error(data[Response.KEY_MESSAGE], data[Response.KEY_ERRORS]);
+            case AjaxResponse.STATUS_ERROR:
+                $.growl.error(data[AjaxResponse.KEY_MESSAGE], data[AjaxResponse.KEY_ERRORS]);
                 dialogButtonEnable();
                 break;
 
-            case Response.STATUS_LOGOUT:
+            case AjaxResponse.STATUS_LOGOUT:
                 $.dialog.show('<div class="message-logout">Your session has expired! Please <a href="index.php">click here</a> to login again.</div>');
                 break;
         }

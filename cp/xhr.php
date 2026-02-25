@@ -256,10 +256,14 @@ function _xLinkGenerate()
         $params[] = 'l=' . urlencode($_REQUEST['link']);
     }
 
+    $link_url = '';
+    $link_saved = false;
+
     switch( $_REQUEST['type'] )
     {
         case 'trade':
             $params[] = 't=' . urlencode($_REQUEST['trade']);
+            $link_url = $C['base_url'] . '/out.php?' . join('&', $params);
             break;
 
         case 'scheme':
@@ -292,10 +296,164 @@ function _xLinkGenerate()
             {
                 $params[] = 'u=' . ($_REQUEST['encoding'] == 'urlencode' ? urlencode($_REQUEST['content_url']) : base64_encode($_REQUEST['content_url']));
             }
+            
+            $link_url = $C['base_url'] . '/out.php?' . join('&', $params);
             break;
     }
 
-    JSON::Success(array('url' => $C['base_url'] . '/out.php?' . join('&', $params)));
+    // Save link if requested
+    if( isset($_REQUEST['save_link']) && $_REQUEST['save_link'] && !empty($_REQUEST['link']) )
+    {
+        require_once 'dirdb.php';
+        $db = new SavedLinksDB();
+        
+        $link_data = array(
+            'link_id' => $_REQUEST['link'],
+            'link_name' => isset($_REQUEST['link_name']) ? $_REQUEST['link_name'] : $_REQUEST['link'],
+            'type' => $_REQUEST['type'],
+            'custom_thumbs' => isset($_REQUEST['custom_thumbs']) ? trim($_REQUEST['custom_thumbs']) : '',
+            'percent' => isset($_REQUEST['percent']) ? $_REQUEST['percent'] : '',
+            'flag_fc' => isset($_REQUEST['flag_fc']) ? '1' : '0',
+            'skim_scheme' => isset($_REQUEST['skim_scheme']) ? $_REQUEST['skim_scheme'] : '',
+            'content_url' => isset($_REQUEST['content_url']) ? $_REQUEST['content_url'] : '',
+            'encoding' => isset($_REQUEST['encoding']) ? $_REQUEST['encoding'] : '',
+            'category' => isset($_REQUEST['category']) ? $_REQUEST['category'] : '',
+            'group' => isset($_REQUEST['group']) ? $_REQUEST['group'] : '',
+            'trade' => isset($_REQUEST['trade']) ? $_REQUEST['trade'] : ''
+        );
+        
+        if ($db->Exists($_REQUEST['link'])) {
+            $db->Update($_REQUEST['link'], $link_data);
+        } else {
+            $db->Add($link_data);
+        }
+        
+        $link_saved = true;
+    }
+
+    JSON::Success(array('url' => $link_url, 'saved' => $link_saved));
+}
+
+function _xCustomThumbsShow()
+{
+    JSON::Success(array(JSON_KEY_DIALOG => _xIncludeCapture('custom-thumbs.php')));
+}
+
+function _xCustomThumbsSave()
+{
+    require_once 'dirdb.php';
+    
+    $thumbs_data = $_REQUEST['thumbs'] ?? array();
+    $updated_count = 0;
+    $errors = array();
+    
+    $db = new TradeDB();
+    
+    foreach($thumbs_data as $domain => $thumbs_text) {
+        // Validate domain exists
+        if (!$db->Exists($domain)) {
+            $errors[] = "Trade '$domain' not found";
+            continue;
+        }
+        
+        // Update custom_thumbs field
+        $update_data = array('custom_thumbs' => trim($thumbs_text));
+        
+        // Validate URLs if provided
+        if (!empty($update_data['custom_thumbs'])) {
+            $urls = explode("\n", $update_data['custom_thumbs']);
+            foreach($urls as $url) {
+                $url = trim($url);
+                if (!empty($url) && !preg_match('~^https?://~i', $url)) {
+                    $errors[] = "Invalid URL for '$domain': $url (must start with http:// or https://)";
+                }
+            }
+        }
+        
+        // Save the trade data
+        $db->Update($domain, $update_data);
+        $updated_count++;
+    }
+    
+    if (!empty($errors)) {
+        JSON::Warning(array(
+            JSON_KEY_MESSAGE => "Custom thumbnails saved with warnings ($updated_count trades updated)",
+            JSON_KEY_WARNINGS => $errors
+        ));
+    } else {
+        JSON::Success(array(
+            JSON_KEY_MESSAGE => "Custom thumbnails saved successfully for $updated_count trade(s)"
+        ));
+    }
+}
+
+function _xSavedLinkEditShow()
+{
+    require_once 'dirdb.php';
+    $db = new SavedLinksDB();
+    $link = $db->Retrieve($_REQUEST['id']);
+    
+    if ($link === null) {
+        JSON::Error('Saved link not found');
+        return;
+    }
+    
+    JSON::Success(array(JSON_KEY_DIALOG => _xIncludeCapture('saved-link-edit.php', $link)));
+}
+
+function _xSavedLinkEdit()
+{
+    require_once 'dirdb.php';
+    $db = new SavedLinksDB();
+    
+    $link_data = array(
+        'link_name' => $_REQUEST['link_name'],
+        'custom_thumbs' => isset($_REQUEST['custom_thumbs']) ? trim($_REQUEST['custom_thumbs']) : ''
+    );
+    
+    $db->Update($_REQUEST['link_id'], $link_data);
+    
+    JSON::Success(array(JSON_KEY_MESSAGE => 'Saved link updated successfully'));
+}
+
+function _xSavedLinkDelete()
+{
+    require_once 'dirdb.php';
+    $db = new SavedLinksDB();
+    $db->Delete($_REQUEST['id']);
+    
+    JSON::Success(array(JSON_KEY_MESSAGE => 'Saved link deleted successfully'));
+}
+
+function _xSavedLinkCopyUrl()
+{
+    global $C;
+    
+    if (!isset($_REQUEST['id'])) {
+        JSON::Error('No link ID provided');
+        return;
+    }
+    
+    $toplist_url = $C['base_url'] . '/savedlinks.php?links=' . urlencode($_REQUEST['id']);
+    
+    JSON::Success(array(JSON_KEY_MESSAGE => 'Toplist URL: ' . $toplist_url));
+}
+
+function _xSavedLinksGenerateToplist()
+{
+    global $C;
+    
+    if (!isset($_REQUEST['link_ids']) || !is_array($_REQUEST['link_ids']) || empty($_REQUEST['link_ids'])) {
+        JSON::Error('No links selected');
+        return;
+    }
+    
+    $link_ids = array_map('trim', $_REQUEST['link_ids']);
+    $link_ids = array_filter($link_ids);
+    
+    $toplist_url = $C['base_url'] . '/savedlinks.php?links=' . urlencode(join(',', $link_ids));
+    
+    JSON::Success(array('toplist_url' => $toplist_url));
 }
 
 function _xNetworkSync()

@@ -18,7 +18,7 @@ var COOKIE_NAME_TRADES = 'sh_trades';
 var COOKIE_NAME_SYSTEM = 'sh_system';
 var STATS_HOURLY = true;
 </script>
-<script type="text/javascript" src="js/stats-overall.js"></script>
+<script type="text/javascript" src="js/stats-overall-v2.js?v=<?php echo time(); ?>"></script>
 
     <div class="centered-header">
       Hourly Stats: <span id="num-items"><?php echo format_int_to_string(count(dir_read_files(DIR_TRADES))); ?></span> Total Trades

@@ -31,6 +31,7 @@ define('DIR_TIMES', DIR_DATA . '/times');
 define('DIR_SKIM_SCHEMES', DIR_DATA . '/skim_schemes');
 define('DIR_SKIM_SCHEMES_BASE', DIR_SKIM_SCHEMES . '/base');
 define('DIR_SKIM_SCHEMES_DYNAMIC', DIR_SKIM_SCHEMES . '/dynamic');
+define('DIR_SAVED_LINKS', DIR_DATA . '/saved_links');
 
 
 // Files
@@ -2386,6 +2387,9 @@ function trade_prepare_data(&$data, $editing = false)
 function domain_from_url($url)
 {
     $parsed_url = parse_url($url);
+    if (!isset($parsed_url['host']) || empty($parsed_url['host'])) {
+        return '';
+    }
     return strtolower(preg_replace('~^www\.~i', '', $parsed_url['host']));
 }
 

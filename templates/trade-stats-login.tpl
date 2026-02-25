@@ -10,7 +10,7 @@
             </div>
           </td>
         </tr>
-        {if $g_errors}
+        {if !empty($g_errors)}
         <tr>
           <td colspan="2">
             <div class="error">

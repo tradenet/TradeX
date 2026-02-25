@@ -1,0 +1,152 @@
+<html>
+<head>
+    <title>TradeX Documentation</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+
+  <div class="main-content">
+
+    <div class="header-main">Manage Saved Links</div>
+
+    <div class="toc-link"><a href="index.html">Table of Contents</a></div>
+
+    <span class="header-section">Overview</span>
+    <div class="section">
+      The Manage Saved Links interface allows you to view, edit, delete, and create toplists from your saved links. Saved links are promotional links created with the <a href="link-generator.html">Link Generator</a> that have custom thumbnail images and can be combined into toplists. Unlike trade toplists, saved link toplists are completely separate from your trades and are used for promotional content that goes through your tracking system (out.php) to content URLs, skim schemes, or specific trades.
+    </div>
+
+    <span class="header-section">Saved Links List</span>
+    <div class="section">
+      The main view shows all your saved links in a table with the following columns:
+      
+      <ul>
+        <b>Link ID -</b>
+        <span>
+          The unique identifier for this link (used in the Link Generator's "Link Identifier" field).
+        </span>
+        <br />
+
+        <b>Link Name -</b>
+        <span>
+          The display name for this link, which appears in the toplist and management interface.
+        </span>
+        <br />
+
+        <b>Type -</b>
+        <span>
+          The type of link: Percent (% to content), Scheme (skim scheme), or Trade (specific trade).
+        </span>
+        <br />
+
+        <b>Thumbnails -</b>
+        <span>
+          The number of custom thumbnail URLs saved for this link.
+        </span>
+        <br />
+
+        <b>Functions -</b>
+        <span>
+          Available actions for each saved link:
+          <ul>
+            <li><b>Edit</b> - Modify the link name and custom thumbnail URLs</li>
+            <li><b>Delete</b> - Remove the saved link (requires confirmation)</li>
+            <li><b>Copy Toplist URL</b> - Get a toplist URL for just this single link</li>
+          </ul>
+        </span>
+        <br />
+      </ul>
+    </div>
+
+    <span class="header-section">Editing Saved Links</span>
+    <div class="section">
+      You can edit the following fields for a saved link:
+      
+      <ul>
+        <b>Link Name -</b>
+        <span>
+          Change the display name that appears in the toplist.
+        </span>
+        <br />
+
+        <b>Custom Thumbnails -</b>
+        <span>
+          Add, remove, or modify the thumbnail URLs (one per line). Each URL should be a complete URL starting with http:// or https://. These images will be displayed in the toplist and will link through out.php to the link's destination.
+        </span>
+        <br />
+      </ul>
+
+      <br />
+      Note: The Link ID, Type, and link settings (percent, skim scheme, content URL, etc.) cannot be modified after creation. If you need to change these, create a new saved link with the Link Generator.
+    </div>
+
+    <span class="header-section">Generate Toplist HTML</span>
+    <div class="section">
+      At the bottom of the Manage Saved Links page, you can create a toplist from multiple saved links:
+
+      <ol>
+        <li>Select one or more saved links from the dropdown list (hold Ctrl/Cmd to select multiple)</li>
+        <li>Click "Generate Toplist URL"</li>
+        <li>Copy the generated URL and use it to display your toplist</li>
+      </ol>
+
+      <br />
+
+      The generated toplist URL format is:
+      <br />
+      <code>http://yourdomain.com/savedlinks.php?links=link1,link2,link3</code>
+
+      <br /><br />
+
+      When visitors access this URL, they'll see a toplist displaying the custom thumbnails for each saved link. Clicking a thumbnail will:
+      <ol>
+        <li>Go through out.php (tracking the click with the link's identifier)</li>
+        <li>Redirect to the link's destination (content URL, skim to trades, or specific trade)</li>
+      </ol>
+
+      <br />
+
+      This allows you to track clicks on promotional content separately from your trade traffic while still using your tracking system and skim schemes.
+    </div>
+
+    <span class="header-section">Creating Saved Links</span>
+    <div class="section">
+      To create a new saved link, use the <a href="link-generator.html">Link Generator</a> from the Tools menu:
+
+      <ol>
+        <li>Configure your link settings (type, content URL, skim scheme, etc.)</li>
+        <li>Provide a Link Identifier (required for saved links)</li>
+        <li>Check the box "Save this link with custom thumbnails"</li>
+        <li>Enter a Link Name (how it will appear in the toplist)</li>
+        <li>Add Custom Thumbnail URLs (one per line)</li>
+        <li>Click "Generate"</li>
+      </ol>
+
+      <br />
+
+      The link will be saved and will appear in the Manage Saved Links interface where you can later edit the thumbnails, combine it with other saved links in a toplist, or delete it.
+    </div>
+
+    <span class="header-section">Use Cases</span>
+    <div class="section">
+      Saved links with toplists are useful for:
+
+      <ul>
+        <li>Creating promotional galleries with custom graphics that link to sponsor content</li>
+        <li>Building themed toplists with seasonal or event-specific imagery</li>
+        <li>Displaying "featured content" with custom thumbnails separate from your trades</li>
+        <li>Creating multiple toplist variations for different pages on your site</li>
+        <li>Tracking which promotional graphics get the most clicks</li>
+        <li>Running A/B tests with different thumbnail images for the same content</li>
+      </ul>
+
+      <br />
+
+      Since all clicks go through out.php with the link identifier, you can see detailed tracking stats for each saved link in your stats pages.
+    </div>
+
+  </div>
+
+</body>
+</html>

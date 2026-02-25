@@ -79,6 +79,8 @@ endif;
           &lsaquo; Tools &rsaquo;
           <div>
             <a href="_xLinkGenerateShow" class="dialog">Link Generator</a>
+            <a href="_xCustomThumbsShow" class="dialog">Custom Thumb Toplist Generator</a>
+            <a href="index.php?r=_xSavedLinksShow">Manage Saved Links</a>
             <a href="_xUrlEncodeShow" class="dialog">URL Encode/Decode</a>
             <a href="_xTradesExportShow" class="dialog">Export Trades</a>
             <a href="index.php?r=_xUpdateShow">Check For Update</a>

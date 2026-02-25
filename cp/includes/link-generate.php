@@ -112,6 +112,27 @@
                   </span>
                 </div>
 
+                <div class="field">
+                  <label></label>
+                  <span>
+                    <?php echo form_checkbox('save_link', 'Save this link with custom thumbnails'); ?>
+                  </span>
+                </div>
+
+                <div class="field hideable save_link">
+                  <label>Link Name:</label>
+                  <span>
+                    <input type="text" name="link_name" value="" size="40"/> <span class="fsize-8pt">(display name for saved link)</span>
+                  </span>
+                </div>
+
+                <div class="field hideable save_link">
+                  <label>Custom Thumbnails:</label>
+                  <span>
+                    <textarea name="custom_thumbs" rows="5" style="width: 500px;" placeholder="Enter thumbnail URLs, one per line"></textarea>
+                  </span>
+                </div>
+
               </fieldset>
 
 
@@ -147,17 +168,42 @@ $(function()
     {
         var type = $(this).val();
 
-        $('.hideable').hide();
+        $('.hideable').not('.save_link').hide();
         $('.' + type).show();
+        
+        // Re-show save_link fields if checkbox is checked
+        if (parseInt($('input[name="save_link"]').val()) == 1) {
+            $('.save_link').show();
+        }
     }).
     change();
 
+    $('input[name="save_link"]')
+    .change(function()
+    {
+        if (parseInt($(this).val()) == 1) {
+            $('.save_link').show();
+            if (!$('input[name="link"]').val()) {
+                alert('You must provide a Link Identifier when saving a link');
+                $(this).val(0);
+                $(this).parent().removeClass('checked');
+                $('.save_link').hide();
+                return;
+            }
+        } else {
+            $('.save_link').hide();
+        }
+    });
 
     $('#link-generator-form')
     .bind('form-success', function(e, data)
     {
         $('#generated-link input[type="text"]').val(data.url);
         $('#generated-link').show();
+        
+        if (data.saved) {
+            alert('Link saved successfully!');
+        }
     });
 });
 </script>

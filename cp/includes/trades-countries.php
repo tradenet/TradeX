@@ -64,26 +64,36 @@ window.RufflePlayer.config = {
     "backgroundColor": "#ffffff"
 };
 
+// Wait for both DOM and Ruffle to be ready
+function initRuffle() {
+    if (window.RufflePlayer && window.RufflePlayer.newest) {
+        const ruffle = window.RufflePlayer.newest();
+        rufflePlayer = ruffle.createPlayer();
+        rufflePlayer.id = "ammap-ruffle-object";
+        rufflePlayer.style.width = "800px";
+        rufflePlayer.style.height = "400px";
+        
+        // Set Flash variables as URL parameters
+        var swfUrl = "swf/ammap.swf?" + 
+            "path=" + encodeURIComponent("swf/") + "&" +
+            "data_file=" + encodeURIComponent("index.php?r=_xTradesCountriesData&stat=In&domain=<?php echo $item['domain']; ?>") + "&" +
+            "settings_file=" + encodeURIComponent("assets/ammap-settings.xml") + "&" +
+            "map_id=ammap-ruffle-object";
+        
+        const container = document.getElementById('ammap');
+        container.innerHTML = '';
+        container.appendChild(rufflePlayer);
+        rufflePlayer.load(swfUrl).then(() => {
+            $(rufflePlayer).css({visibility: 'visible'});
+        });
+    } else {
+        // Retry if Ruffle isn't loaded yet
+        setTimeout(initRuffle, 100);
+    }
+}
+
 $(document).ready(function() {
-    const ruffle = window.RufflePlayer.newest();
-    rufflePlayer = ruffle.createPlayer();
-    rufflePlayer.id = "ammap-ruffle-object";
-    rufflePlayer.style.width = "800px";
-    rufflePlayer.style.height = "400px";
-    
-    // Set Flash variables as URL parameters
-    var swfUrl = "swf/ammap.swf?" + 
-        "path=" + encodeURIComponent("swf/") + "&" +
-        "data_file=" + encodeURIComponent("index.php?r=_xTradesCountriesData&stat=In&domain=<?php echo $item['domain']; ?>") + "&" +
-        "settings_file=" + encodeURIComponent("assets/ammap-settings.xml") + "&" +
-        "map_id=ammap-ruffle-object";
-    
-    const container = document.getElementById('ammap');
-    container.innerHTML = '';
-    container.appendChild(rufflePlayer);
-    rufflePlayer.load(swfUrl).then(() => {
-        $(rufflePlayer).css({visibility: 'visible'});
-    });
+    initRuffle();
 });
 
 $('span.option')
