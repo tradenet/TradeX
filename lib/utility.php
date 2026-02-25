@@ -1658,7 +1658,8 @@ function build_saved_links_toplist($config)
 
     if( $config['source_type'] == 'specific_links' && !empty($config['link_ids']) )
     {
-        $link_ids = explode(',', $config['link_ids']);
+        $ids_raw = $config['link_ids'];
+        $link_ids = is_array($ids_raw) ? $ids_raw : (unserialize($ids_raw) ?: array());
         $raw_links = array();
         foreach( $link_ids as $lid )
         {
@@ -1774,9 +1775,8 @@ function build_saved_links_toplist($config)
     // Write static file
     file_write($config['outfile'], $output);
 
-    // Update last_build timestamp
-    $db = new ToplistsSavedLinksDB();
-    $db->Update($config['toplist_id'], array('last_build' => $g_time));
+    // Update last_build timestamp via touch (zero-overhead, no DB rewrite)
+    touch(DIR_TIMES . '/saved-link-toplist-' . $config['toplist_id']);
 }
 
 

@@ -15,13 +15,12 @@
       $item_defaults = array(
           'toplist_id'       => '',
           'source_type'      => 'all_links',
-          'link_ids'         => '',
+          'link_ids'         => array(),
           'template'         => 'toplist-saved-links-36.tpl',
           'outfile'          => '',
           'sort_by'          => 'link_name',
           'max_thumbnails'   => 36,
           'rebuild_interval' => '',
-          'last_build'       => 0,
       );
 
       $item = array_merge($item_defaults, $item);
@@ -31,11 +30,18 @@
       $saved_links_db = new SavedLinksDB();
       $all_saved_links = $saved_links_db->RetrieveAll('link_name');
 
-      // Parse selected link_ids into array
+      // Parse selected link_ids into array (stored serialized, or already unserialized by EditShow)
       $selected_link_ids = array();
       if( !empty($item['link_ids']) )
       {
-          $selected_link_ids = array_map('trim', explode(',', $item['link_ids']));
+          if( is_array($item['link_ids']) )
+          {
+              $selected_link_ids = $item['link_ids'];
+          }
+          elseif( is_string($item['link_ids']) )
+          {
+              $selected_link_ids = unserialize($item['link_ids']) ?: array();
+          }
       }
 
       // Collect available saved-links toplist templates

@@ -501,14 +501,14 @@ function _xSavedLinkToplistsAdd()
                                    JSON_KEY_WARNINGS  => $v->GetErrors()));
     }
 
-    // Flatten link_ids_multi array to comma-separated string
+    // Serialize link_ids_multi array (consistent with other multi-value fields)
     if( isset($_REQUEST['link_ids_multi']) && is_array($_REQUEST['link_ids_multi']) )
     {
-        $_REQUEST['link_ids'] = join(',', array_map('trim', $_REQUEST['link_ids_multi']));
+        $_REQUEST['link_ids'] = serialize(array_values(array_map('trim', $_REQUEST['link_ids_multi'])));
     }
     else
     {
-        $_REQUEST['link_ids'] = '';
+        $_REQUEST['link_ids'] = serialize(array());
     }
 
     require_once 'textdb.php';
@@ -532,6 +532,12 @@ function _xSavedLinkToplistsEditShow()
         return JSON::Error('Saved link toplist not found');
     }
 
+    // Unserialize link_ids so the dialog multi-select pre-selects correctly
+    if( !empty($item['link_ids']) && is_string($item['link_ids']) )
+    {
+        $item['link_ids'] = unserialize($item['link_ids']) ?: array();
+    }
+
     JSON::Success(array(JSON_KEY_DIALOG => _xIncludeCapture('saved-links-toplist-add.php', $item)));
 }
 
@@ -551,11 +557,11 @@ function _xSavedLinkToplistsEdit()
 
     if( isset($_REQUEST['link_ids_multi']) && is_array($_REQUEST['link_ids_multi']) )
     {
-        $_REQUEST['link_ids'] = join(',', array_map('trim', $_REQUEST['link_ids_multi']));
+        $_REQUEST['link_ids'] = serialize(array_values(array_map('trim', $_REQUEST['link_ids_multi'])));
     }
     else
     {
-        $_REQUEST['link_ids'] = '';
+        $_REQUEST['link_ids'] = serialize(array());
     }
 
     require_once 'textdb.php';
@@ -576,6 +582,7 @@ function _xSavedLinkToplistsDelete()
     require_once 'textdb.php';
     $db = new ToplistsSavedLinksDB();
     $db->Delete($_REQUEST['toplist_id']);
+    @unlink(DIR_TIMES . '/saved-link-toplist-' . $_REQUEST['toplist_id']);
 
     JSON::Success(array(JSON_KEY_MESSAGE    => 'Saved link toplist has been deleted',
                         JSON_KEY_ITEM_TYPE  => 'saved-link-toplists',
@@ -592,6 +599,7 @@ function _xSavedLinkToplistsDeleteBulk()
     foreach( explode(',', $_REQUEST['toplist_id']) as $id )
     {
         $db->Delete(trim($id));
+        @unlink(DIR_TIMES . '/saved-link-toplist-' . trim($id));
     }
 
     JSON::Success(array(JSON_KEY_MESSAGE => 'Selected saved link toplists have been deleted'));

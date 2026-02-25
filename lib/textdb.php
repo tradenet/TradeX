@@ -630,8 +630,7 @@ class ToplistsSavedLinksDB extends TextDB
                               'outfile',
                               'sort_by',
                               'max_thumbnails',
-                              'rebuild_interval',
-                              'last_build');
+                              'rebuild_interval');
     }
 
     function Defaults()
@@ -644,7 +643,6 @@ class ToplistsSavedLinksDB extends TextDB
         $defaults['sort_by']         = 'link_name';
         $defaults['max_thumbnails']  = 36;
         $defaults['rebuild_interval'] = '';
-        $defaults['last_build']      = 0;
 
         return $defaults;
     }

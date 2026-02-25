@@ -15,7 +15,10 @@
             <?php echo $item['outfile']; ?>
           </td>
           <td class="ta-center">
-            <?php echo empty($item['last_build']) || $item['last_build'] == 0 ? 'Never' : date('Y-m-d H:i', $item['last_build']); ?>
+            <?php
+            $time_file = DIR_TIMES . '/saved-link-toplist-' . $original['toplist_id'];
+            echo file_exists($time_file) ? date('Y-m-d H:i', filemtime($time_file)) : 'Never';
+            ?>
           </td>
           <td class="ta-right">
             <div class="p-relative">

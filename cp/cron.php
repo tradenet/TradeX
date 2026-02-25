@@ -116,7 +116,8 @@ function build_all_saved_links_toplists_cron()
             continue;
         }
 
-        $minutes_since_build = empty($toplist['last_build']) ? PHP_INT_MAX : (time() - (int) $toplist['last_build']) / 60;
+        $time_file = DIR_TIMES . '/saved-link-toplist-' . $toplist['toplist_id'];
+        $minutes_since_build = file_exists($time_file) ? (time() - filemtime($time_file)) / 60 : PHP_INT_MAX;
 
         if( $minutes_since_build >= (int) $toplist['rebuild_interval'] )
         {
