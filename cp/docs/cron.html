@@ -163,6 +163,13 @@
                                   so the toplists are only built through cron.
                                 </span>
         <br />
+
+        <b>--build-saved-link-toplists</b> <span>
+                                  This will rebuild any configured <a href="saved-links-toplists.html">saved link toplists</a>
+                                  whose <i style="font-weight: bold;">Auto-Rebuild</i> interval has elapsed since they were last built.
+                                  Toplists with Auto-Rebuild set to 0 or blank are skipped.
+                                </span>
+        <br />
       </ul>
 
       Here are some examples of the cron commands you might use.  Assume that the CLI version of PHP is located at /usr/bin/php and the cron.php script is located

@@ -1,0 +1,338 @@
+<html>
+<head>
+    <title>TradeX Documentation</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+
+  <div class="main-content">
+
+    <div class="header-main">Saved Link Toplists</div>
+
+    <div class="toc-link"><a href="index.html">Table of Contents</a></div>
+
+    <span class="header-section">Overview</span>
+    <div class="section">
+      The Saved Link Toplists feature allows you to generate static HTML toplist files from your
+      <a href="saved-links.html">saved links</a>.  Unlike the dynamic toplist URL provided by
+      <code>savedlinks.php</code>, a static toplist is a plain HTML file written directly to disk.
+      Static files load instantly, can be served by a CDN, and continue to work even if PHP is
+      temporarily unavailable on your server.
+
+      <br /><br />
+
+      You can configure any number of saved link toplist definitions.  Each definition specifies which
+      links to include, which template to use, and where on disk to write the output file.  Toplists can
+      be rebuilt manually from the control panel or automatically on a schedule through cron.
+    </div>
+
+
+    <span class="header-section">Dynamic vs. Static Toplists</span>
+    <div class="section">
+      <table cellspacing="0" cellpadding="4" border="1" style="border-collapse: collapse;">
+        <thead>
+          <tr>
+            <td><b>Feature</b></td>
+            <td><b>Dynamic (<code>savedlinks.php</code>)</b></td>
+            <td><b>Static (Saved Link Toplists)</b></td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Generated on every page request</td><td>Yes</td><td>No</td></tr>
+          <tr><td>Requires PHP on each request</td><td>Yes</td><td>No</td></tr>
+          <tr><td>Can be served via CDN</td><td>No</td><td>Yes</td></tr>
+          <tr><td>Easy to embed in static sites</td><td>No</td><td>Yes</td></tr>
+          <tr><td>Always reflects latest link data</td><td>Yes</td><td>Only after rebuild</td></tr>
+          <tr><td>Multiple output locations</td><td>No</td><td>Yes</td></tr>
+          <tr><td>Scheduled auto-rebuild</td><td>N/A</td><td>Yes (via cron)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <span class="header-section">Managing Saved Link Toplists</span>
+    <div class="section">
+      Access the management interface from the <b>Tools</b> menu &rsaquo; <b>Manage Saved Link Toplists</b>.
+      The table lists all configured toplists with the following columns:
+
+      <ul>
+        <b>ID -</b>
+        <span>Auto-assigned numeric identifier for the toplist configuration.</span>
+        <br />
+
+        <b>Source -</b>
+        <span>Either <i>All Links</i> (every saved link is included) or <i>Specific Links</i> (a chosen subset).</span>
+        <br />
+
+        <b>Template -</b>
+        <span>The <code>.tpl</code> template file used to render the HTML output.</span>
+        <br />
+
+        <b>Output File -</b>
+        <span>The full path on disk where the static HTML file will be written.</span>
+        <br />
+
+        <b>Last Built -</b>
+        <span>The date and time the toplist was last successfully built, or <i>Never</i> if it has not been built yet.</span>
+        <br />
+
+        <b>Functions -</b>
+        <span>Per-row action icons (Build, Edit, Delete).</span>
+        <br />
+      </ul>
+    </div>
+
+
+    <span class="header-section">Individual Toplist Icons</span>
+    <div class="section">
+      Each configured toplist has the following icons at the end of its table row:
+
+      <ul>
+        <img src="../images/build-22x22.png" />
+        <span>Click this icon to build (regenerate) the static HTML file for this toplist immediately.</span>
+
+        <br />
+
+        <img src="../images/edit-22x22.png" />
+        <span>Click this icon to edit the toplist configuration.  A dialog will appear where you can change any setting.</span>
+
+        <br />
+
+        <img src="../images/delete-22x22.png" />
+        <span>Click this icon to delete the toplist configuration.  The static HTML output file on disk is <b>not</b> deleted.</span>
+      </ul>
+    </div>
+
+
+    <span class="header-section">Toolbar Icons</span>
+    <div class="section">
+      The toolbar at the bottom of the management interface provides the following actions:
+
+      <ul>
+        <img src="../images/add-32x32.png" />
+        <span>Add a new saved link toplist configuration.</span>
+
+        <br />
+
+        <img src="../images/build-32x32.png" />
+        <span>Build the selected toplists.  Use the checkboxes in the table to select which ones to build.</span>
+
+        <br />
+
+        <img src="../images/delete-32x32.png" />
+        <span>Delete the selected toplist configurations.  Use the checkboxes to select which ones to delete.</span>
+
+        <br />
+
+        <img src="../images/build-all-32x32.png" />
+        <span>Build <b>all</b> configured saved link toplists at once.</span>
+      </ul>
+    </div>
+
+
+    <span class="header-section">Adding or Editing a Saved Link Toplist</span>
+    <div class="section">
+      Click the <b>Add</b> toolbar icon or the edit icon on an existing toplist row to open the configuration dialog.
+      The available fields are:
+
+      <ul>
+        <b>Source -</b>
+        <span>
+          Choose <i>All Saved Links</i> to include every saved link, or <i>Specific Links</i> to hand-pick which links appear.
+          When <i>Specific Links</i> is selected, a multi-select list appears where you can choose the links to include
+          (hold <b>Ctrl</b> or <b>Cmd</b> to select more than one).
+        </span>
+        <br />
+
+        <b>Template -</b>
+        <span>
+          Select the template file to use for rendering the toplist HTML.  Any template file whose name matches
+          <code>toplist-saved-links-*.tpl</code> in the <code>templates/</code> directory will appear here.
+          The included templates are:
+          <ul>
+            <li><code>toplist-saved-links-25.tpl</code> &mdash; 5 &times; 5 grid, up to 25 thumbnails</li>
+            <li><code>toplist-saved-links-36.tpl</code> &mdash; 6 &times; 6 grid, up to 36 thumbnails</li>
+            <li><code>toplist-saved-links-50.tpl</code> &mdash; 10 &times; 5 grid, up to 50 thumbnails</li>
+            <li><code>toplist-saved-links-100.tpl</code> &mdash; 10 &times; 10 grid, up to 100 thumbnails</li>
+          </ul>
+          You can create your own template by placing a <code>.tpl</code> file in the <code>templates/</code> directory
+          with a name matching the above pattern.  See the <a href="#templates">Templates</a> section below for details.
+        </span>
+        <br />
+
+        <b>Output File -</b>
+        <span>
+          The full absolute path to the HTML file that will be written to disk when the toplist is built.
+          Example: <code>/home/john/site.com/public_html/toplist.html</code>
+          <br />
+          The directory must exist and be writable by the web server.  If the file does not yet exist, the
+          directory must be writable.  If it already exists, the file itself must be writable (permissions 644 or 666).
+        </span>
+        <br />
+
+        <b>Sort By -</b>
+        <span>
+          Controls the order links appear in the toplist.  Options are:
+          <ul>
+            <li><i>Link Name</i> &mdash; alphabetical by the link's display name</li>
+            <li><i>Link ID</i> &mdash; alphabetical by the link identifier</li>
+            <li><i>Date Created</i> &mdash; chronological by when the link was saved</li>
+          </ul>
+          This setting is ignored for <i>Specific Links</i> source; links appear in the order you selected them.
+        </span>
+        <br />
+
+        <b>Max Thumbnails -</b>
+        <span>
+          The maximum number of thumbnail entries to include in the output.  If a single saved link has multiple
+          custom thumbnail URLs, each URL counts as one entry.  Default is 36.
+        </span>
+        <br />
+
+        <b>Auto-Rebuild -</b>
+        <span>
+          Enter a number of minutes to enable automatic rebuilding via the cron command.  Leave blank or set to 0
+          to disable auto-rebuild (the toplist will only be regenerated when you click Build manually or run
+          Build All).  See the <a href="#cron">Cron Integration</a> section below for setup instructions.
+        </span>
+        <br />
+      </ul>
+    </div>
+
+
+    <span class="header-section"><a name="templates">Creating Custom Templates</a></span>
+    <div class="section">
+      Saved link toplist templates are standard TradeX template files stored in the <code>templates/</code>
+      directory.  The file name must follow the pattern <code>toplist-saved-links-*.tpl</code> to appear
+      in the template dropdown.
+
+      <br /><br />
+
+      The following template variables are available inside the template:
+
+      <ul>
+        <b><code>{$g_links}</code> -</b>
+        <span>
+          An array of expanded link entries.  Each element is an associative array with the following keys:
+          <ul>
+            <li><code>link_id</code> &mdash; the link identifier</li>
+            <li><code>link_name</code> &mdash; display name</li>
+            <li><code>out_url</code> &mdash; the full <code>out.php</code> tracking URL for this link</li>
+            <li><code>thumb_url</code> &mdash; URL of this specific thumbnail image (one entry per thumbnail)</li>
+            <li><code>type</code> &mdash; link type (percent / scheme / trade)</li>
+          </ul>
+        </span>
+        <br />
+
+        <b><code>{$g_config}</code> -</b>
+        <span>The global TradeX configuration array (e.g. <code>{$g_config.base_url}</code>).</span>
+        <br />
+
+        <b><code>{$g_timestamp}</code> -</b>
+        <span>Unix timestamp of when the build was run.</span>
+        <br />
+
+        <b><code>{$g_date}</code> -</b>
+        <span>Formatted date string of when the build was run (uses the date format from Global Settings).</span>
+        <br />
+
+        <b><code>{$g_datetime}</code> -</b>
+        <span>Formatted date and time string of when the build was run.</span>
+        <br />
+      </ul>
+
+      Below is an abbreviated example of a custom 4-column template:
+
+<pre>
+&lt;table cellspacing="0" cellpadding="5" border="0"&gt;
+{assign var=$base_url_https code=str_replace('http://','https://',$g_config.base_url)}
+{foreach var=$link from=$g_links counter=$counter}
+  {if $counter % 4 == 1}&lt;tr&gt;{/if}
+    &lt;td align="center" valign="top"&gt;
+      &lt;a href="{$link.out_url}" target="_blank"&gt;
+        &lt;img src="{$link.thumb_url}" border="0" alt="{$link.link_name}" /&gt;&lt;br /&gt;
+        {$link.link_name}
+      &lt;/a&gt;
+    &lt;/td&gt;
+  {if $counter % 4 == 0}&lt;/tr&gt;{/if}
+{/foreach}
+{if $counter % 4 != 0}&lt;/tr&gt;{/if}
+&lt;/table&gt;
+</pre>
+
+      After placing the new <code>.tpl</code> file in the <code>templates/</code> directory it will
+      automatically appear in the template dropdown the next time you open the Add or Edit dialog.
+    </div>
+
+
+    <span class="header-section">Output File Permissions</span>
+    <div class="section">
+      For the build process to write the static HTML file successfully, the following must be true:
+
+      <ul>
+        <li>If the output file <b>already exists</b>: the file must be writable by the web server process (permissions <code>644</code> or <code>666</code>).</li>
+        <li>If the output file <b>does not yet exist</b>: the directory that will contain it must exist and be writable (<code>755</code> or <code>777</code>).</li>
+      </ul>
+
+      If a build fails due to a permissions problem, an error will be written to <code>logs/error.log</code>.
+      Check that file for details if your output file is not being created or updated.
+    </div>
+
+
+    <span class="header-section"><a name="cron">Cron Integration</a></span>
+    <div class="section">
+      To have saved link toplists rebuilt automatically, use the <code>--build-saved-link-toplists</code>
+      argument with the <code>cron.php</code> script.  When this command runs, TradeX checks every configured
+      toplist and rebuilds any whose <b>Auto-Rebuild</b> interval has elapsed since the last build.
+      Toplists with Auto-Rebuild left blank or set to 0 are skipped and will not be built automatically.
+
+      <br /><br />
+
+      Example crontab entry to check every 15 minutes (assume PHP is at <code>/usr/bin/php</code> and
+      the script is at <code>/home/john/site.com/tx/cp/cron.php</code>):
+
+      <br /><br />
+
+      <div class="mono">*/15 * * * * /usr/bin/php -q /home/john/site.com/tx/cp/cron.php --build-saved-link-toplists</div>
+
+      <br />
+
+      Run it more frequently than your shortest rebuild interval so that builds happen close to on time.
+      Build activity is logged to <code>logs/cron.log</code>.
+
+      <br /><br />
+
+      See <a href="cron.html">Using Cron to Automate Functions</a> for general cron setup instructions.
+    </div>
+
+
+    <span class="header-section">Troubleshooting</span>
+    <div class="section">
+      <ul>
+        <b>Output file is not created or updated -</b>
+        <span>Check <code>logs/error.log</code> for a message indicating the exact cause (permissions, missing directory, template error).</span>
+        <br />
+
+        <b>Template not appearing in dropdown -</b>
+        <span>Ensure the file is in the <code>templates/</code> directory and the name matches <code>toplist-saved-links-*.tpl</code>.</span>
+        <br />
+
+        <b>Toplist is empty or has fewer entries than expected -</b>
+        <span>Verify your saved links have custom thumbnail URLs set.  Links without thumbnails count as one entry each (with a placeholder image).</span>
+        <br />
+
+        <b>Auto-rebuild is not running -</b>
+        <span>Confirm the cron job is registered (<code>crontab -l</code>), the Auto-Rebuild interval for the toplist is greater than 0, and the cron interval is shorter than the rebuild interval.</span>
+        <br />
+
+        <b>Clicking Build All shows a success message but output files are not updated -</b>
+        <span>The success message is shown even if individual builds fail.  Check <code>logs/error.log</code> for per-toplist error details.</span>
+        <br />
+      </ul>
+    </div>
+
+  </div>
+
+</body>
+</html>
