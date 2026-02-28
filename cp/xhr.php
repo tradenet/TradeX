@@ -568,6 +568,14 @@ function _xSavedLinkToplistsEdit()
     $db = new ToplistsSavedLinksDB();
     $db->Update($_REQUEST['toplist_id'], $_REQUEST);
 
+    // Unserialize link_ids before passing to _xIncludeCapture: string_htmlspecialchars
+    // would convert the " delimiters in the serialized string to &quot;, corrupting byte counts
+    // and causing unserialize() to fail when the dialog template tries to read them.
+    if( !empty($_REQUEST['link_ids']) && is_string($_REQUEST['link_ids']) )
+    {
+        $_REQUEST['link_ids'] = unserialize($_REQUEST['link_ids']) ?: array();
+    }
+
     JSON::Success(array(JSON_KEY_MESSAGE    => 'Saved link toplist has been updated',
                         JSON_KEY_ROW        => _xIncludeCapture('saved-links-toplist-tr.php', $_REQUEST),
                         JSON_KEY_ITEM_ID    => $_REQUEST['toplist_id'],

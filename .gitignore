@@ -1,3 +1,5 @@
 test*.php
 logs/*
 templates/toplist-random*
+SAVED_LINKS_STATIC_TOPLIST_PLAN.md
+

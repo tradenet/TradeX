@@ -1368,6 +1368,7 @@ function network_stats_cache_remove($domain)
     require_once 'stats.php';
 
     $cache = unserialize(file_get_contents(FILE_NETWORK_SITES_CACHE));
+    if( !is_array($cache) ) $cache = array();
 
     unset($cache[$domain]);
 
@@ -1379,6 +1380,7 @@ function network_stats_cache_update($site, $response)
     require_once 'stats.php';
 
     $cache = unserialize(file_get_contents(FILE_NETWORK_SITES_CACHE));
+    if( !is_array($cache) ) $cache = array();
 
     $so = unserialize($response);
     $so->trade = array('domain' => $site['domain']);

@@ -74,6 +74,9 @@ class HTTP
     {
         $result = false;
 
+        if( empty($url) )
+            return false;
+
         if( ($parsed_url = parse_url($url)) !== false )
         {
             $scheme = isset($parsed_url['scheme']) ? strtolower($parsed_url['scheme']) : 'http';
